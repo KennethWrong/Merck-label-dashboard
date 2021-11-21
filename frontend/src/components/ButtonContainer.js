@@ -10,7 +10,7 @@ function ButtonContainer() {
       <Stack className='button-grp' direction="row" spacing={2}>
           <Button href='/' variant="contained" startIcon={<UploadIcon/>}>Upload</Button>
           <Button href='/QRScanner' variant="contained" startIcon={<QrCodeScannerIcon/>}>Scan Tag</Button>
-
+          <Button href='/create/qr_code' variant="contained" startIcon={<QrCodeScannerIcon/>}>Create QR Code</Button>
       </Stack>
     </>
   );
