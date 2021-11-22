@@ -9,7 +9,6 @@ import BasicTable from "./ScanTable";
 
 function QRScanner () {
     const [qrScan, setQrScan] = useState('');
-    const [textInfo, setTextInfo] = useState('')
 
     const [allValues, setAllValues] = useState({
         qr_code_key: '',
@@ -22,7 +21,8 @@ function QRScanner () {
 
     const handleScan = data => {
         if (data) {
-            setQrScan(data)
+            let responseJSON = modifyToJSON(data)
+            setQrScan(responseJSON['qr_code_key'])
         }
     }
     const handleError = e => {
@@ -37,11 +37,7 @@ function QRScanner () {
                 }
                 try{
                     let res = await axios.post('http://localhost:5000/scan/qr_code',obj)
-                    let message = res.data
-                    
-                    message = message.replace(/'/g, '"')
-                    let responseJSON = JSON.parse(message)
-                    console.log(responseJSON)
+                    let responseJSON = res.data
 
                     setAllValues({
                                 qr_code_key : responseJSON.qr_code_key,
@@ -53,7 +49,6 @@ function QRScanner () {
                 }
                 catch(e){
                     console.log(e)
-                    setTextInfo('QR code does not match any test samples')
                 }
             }
             sendInfoToFlask()
@@ -63,7 +58,6 @@ function QRScanner () {
     return (
         <div style={{display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center'}}>
         <h1>Qr Scanner</h1>
-        {console.log(allValues)}
         <div>
             <QRScan
             delay = {300}
@@ -72,17 +66,17 @@ function QRScanner () {
             style={{height: 240, width: 320, borderRadius:5}}
             />
         </div>
-        {/* <TextareaAutosize
-        style={{fontSize:18, width:500,height:500, marginTop:100}}
-        rowsMax={4}
-        defaultValue={textInfo}
-        value={textInfo}
-        /> */}
         <Box sx={{ mt: 12, }}>
         <BasicTable info={allValues}/>
         </Box>
         </div>
     )
+}
+
+const modifyToJSON = (message) => {
+    message = message.replace(/'/g, '"')
+    let responseJSON = JSON.parse(message)
+    return responseJSON
 }
 
 export default QRScanner;

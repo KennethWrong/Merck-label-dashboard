@@ -2,6 +2,7 @@ from flask import Flask,send_from_directory, request, send_file
 import api_helper
 from flask_cors import CORS, cross_origin
 import qr_code
+import datetime
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend/build')
 CORS(app)
@@ -18,16 +19,20 @@ def home():
 @app.route('/scan/qr_code', methods=['POST'])
 def get_vile_info_from_qr_code():
     content = request.json
-    print(content)
     qr_code_key = content['qr_code_key']
-    response = api_helper.create_response(qr_code_key)
+    info = api_helper.retrieve_sample_information_with_key(qr_code_key)
+
+    response = api_helper.create_response(info)
     return response
 
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    qr = qr_code.create_qr_code(content)
-    print(f"In route {qr}")
+    current_utc = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    qr = qr_code.create_qr_code(content, current_utc)
+
+    #insert sample and information into qr_code
+    api_helper.insert_new_sample(qr, content, current_utc)
     response = api_helper.create_response(qr)
     return response
 
