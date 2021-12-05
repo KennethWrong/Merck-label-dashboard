@@ -21,6 +21,7 @@ function QRScanner () {
 
     const handleScan = data => {
         if (data) {
+            console.log(data)
             let responseJSON = modifyToJSON(data)
             setQrScan(responseJSON['qr_code_key'])
         }

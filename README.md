@@ -1,4 +1,4 @@
-# Merck-lable-dashboard
+# Merck-label-dashboard
 
 
 ## How to run the project

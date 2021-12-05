@@ -1,8 +1,10 @@
 from flask import Flask,send_from_directory, request, send_file
 import api_helper
 from flask_cors import CORS, cross_origin
+from werkzeug.utils import secure_filename
 import qr_code
 import datetime
+import os
 
 app = Flask(__name__, static_url_path='', static_folder='../frontend/build')
 CORS(app)
@@ -39,6 +41,15 @@ def create_qr_code():
 @app.route('/assets/qr_code/<qr_code_key>',methods=['GET'])
 def get_qr_code(qr_code_key):
     return send_file(f'qr_codes/{qr_code_key}.png', mimetype='image/png')
+
+@app.route('/csv',methods=['POST'])
+def dump_csv():
+    file = request.files['csv']
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(os.curdir,'csv',f"{filename}")
+    file.save(file_path)
+    api_helper.parse_csv_to_db(file_path)
+    return 'hi'
 
 
 if __name__ == '__main__':
