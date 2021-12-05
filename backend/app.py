@@ -6,7 +6,7 @@ import qr_code
 import datetime
 import os
 
-app = Flask(__name__, static_url_path='', static_folder='../frontend/build')
+app = Flask(__name__, static_url_path='')
 CORS(app)
 
 @app.route('/',methods=['GET'])
@@ -46,9 +46,10 @@ def get_qr_code(qr_code_key):
 def dump_csv():
     file = request.files['csv']
     filename = secure_filename(file.filename)
-    file_path = os.path.join(os.curdir,'csv',f"{filename}")
-    file.save(file_path)
-    res = api_helper.parse_csv_to_db(file_path)
+    dir_path = os.path.join(os.getcwd(),'csv')
+    full_path = os.path.join(dir_path,f"{filename}")
+    file.save(full_path)
+    res = api_helper.parse_csv_to_db(full_path)
     
     return api_helper.create_response(status_code=res)
 

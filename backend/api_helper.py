@@ -73,5 +73,6 @@ def parse_csv_to_db(file_path):
                 conn.commit()
                 conn.close()
                 return 200
-        except:
+        except Exception as e:
+                print(e)
                 return 500
