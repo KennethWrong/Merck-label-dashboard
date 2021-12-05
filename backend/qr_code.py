@@ -3,7 +3,6 @@ import sys
 
 # Link for website
 def create_qr_code(obj, date):
-        print(obj, file=sys.stdout)
 
         protein_concentration = obj['protein_concentration']
         batch_id = obj['batch_id']

@@ -4,9 +4,13 @@ import { Button } from "@mui/material";
 import UploadIcon from '@mui/icons-material/Upload';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import axios from 'axios'
+import { Alert } from '@mui/material';
+import Box from '@material-ui/core/Box';
 
 function ButtonContainer() {
   const [file, setFile] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(false)
+  const [successMessage, setSuccessMessage] = useState(false)
 
 
   const handleFileChange = (e) => {
@@ -18,12 +22,33 @@ function ButtonContainer() {
     e.preventDefault()
     let formData = new FormData()
     formData.append('csv',file)
-
+    try{
     let res = await axios.post('http://localhost:5000/csv', formData)
+    setSuccessMessage(true)
+    setTimeout(() => {
+      setSuccessMessage(false)
+    },1500)
+    }catch{
+      setErrorMessage(true)
+      setTimeout(() => {
+        setErrorMessage(false)
+      },1500)
+    }
   }
 
   return (
     <>
+      {successMessage?
+      <Box mt={5} mb={5}>
+        <Alert severity="success" style={{ fontSize: '40px' }}>CSV File Upload Successful</Alert>
+      </Box>:''
+      }
+      {errorMessage?
+      <Box mt={5} mb={5}>
+        <Alert severity="error" style={{ fontSize: '40px' }}>CSV File Upload failed, Please check file</Alert>
+      </Box>:''
+      }
+
       <Stack className='button-grp' direction="row" spacing={2}>
         <div>
           <input type="file" onChange={(e) => handleFileChange(e)}/>

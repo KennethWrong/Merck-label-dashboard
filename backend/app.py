@@ -48,8 +48,9 @@ def dump_csv():
     filename = secure_filename(file.filename)
     file_path = os.path.join(os.curdir,'csv',f"{filename}")
     file.save(file_path)
-    api_helper.parse_csv_to_db(file_path)
-    return 'hi'
+    res = api_helper.parse_csv_to_db(file_path)
+    
+    return api_helper.create_response(status_code=res)
 
 
 if __name__ == '__main__':

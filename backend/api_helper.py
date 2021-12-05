@@ -32,7 +32,6 @@ def retrieve_sample_information_with_key(qr_code_key):
         return_dic = {}
 
         qr_code_key = str(qr_code_key)
-        print(qr_code_key)
 
         cur.execute("SELECT * FROM samples WHERE qr_code_key=?",
                         (qr_code_key,))
@@ -52,22 +51,27 @@ def retrieve_sample_information_with_key(qr_code_key):
         return return_dic
 
 def parse_csv_to_db(file_path):
-        df = pd.read_csv(file_path)
-        qr_codes = []
-        current_utc = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        for index,row in df.iterrows():
-                dic = {
-                        'sample_id': row['sample_id'],
-                        'batch_id': row['batch_id'],
-                        'protein_concentration': row['protein_concentration'],
-                }
-                code = qr_code.create_qr_code(dic, current_utc)
-                qr_codes.append(code)
-        qr_codes = pd.DataFrame(qr_codes)
-        df['qr_code_key'] = qr_codes
+        try:
+                df = pd.read_csv(file_path)
+                qr_codes = []
+                current_utc = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                for index,row in df.iterrows():
+                        dic = {
+                                'sample_id': row['sample_id'],
+                                'batch_id': row['batch_id'],
+                                'protein_concentration': row['protein_concentration'],
+                        }
+                        code = qr_code.create_qr_code(dic, current_utc)
+                        qr_codes.append(code)
+                qr_codes = pd.DataFrame(qr_codes)
+                df['qr_code_key'] = qr_codes
 
-        conn = sqlite3.connect('data/database.db')
-        df.to_sql('samples', conn, index = False, if_exists='append')
-        conn.commit()
-        conn.close()
-        print(df)
+                conn = sqlite3.connect('data/database.db')
+                #have to resolve if data types are the same, perhaps change this to a for loop and appending rows 1 by 1
+                #When data is the same we simply skip or update
+                df.to_sql('samples', conn, index = False, if_exists='append')
+                conn.commit()
+                conn.close()
+                return 200
+        except:
+                return 500
