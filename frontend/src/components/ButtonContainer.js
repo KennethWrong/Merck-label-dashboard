@@ -3,6 +3,7 @@ import { Stack } from "@mui/material";
 import { Button } from "@mui/material";
 import UploadIcon from '@mui/icons-material/Upload';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 
 function ButtonContainer() {
   return (
@@ -10,7 +11,7 @@ function ButtonContainer() {
       <Stack className='button-grp' direction="row" spacing={2}>
           <Button href='/' variant="contained" startIcon={<UploadIcon/>}>Upload</Button>
           <Button href='/QRScanner' variant="contained" startIcon={<QrCodeScannerIcon/>}>Scan Tag</Button>
-          <Button href='/create/qr_code' variant="contained" startIcon={<QrCodeScannerIcon/>}>Create QR Code</Button>
+          <Button href='/create/qr_code' variant="contained" startIcon={<QrCodeIcon/>}>Create QR Code</Button>
       </Stack>
     </>
   );
