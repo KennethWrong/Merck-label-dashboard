@@ -30,6 +30,9 @@ function CreateQRcode(){
             }
             let res = await axios.post('http://localhost:5000/create/qr_code', obj)
             setQR(res.data)
+            setSampleID('')
+            setBatchID('')
+            setPC('')
 
         }catch(e){
             console.log(e)
@@ -45,7 +48,7 @@ function CreateQRcode(){
             <TextField fullWidth label="Protein Concentration" value={PC} onChange={handleChangePC}
             id="fullWidth" variant="filled" margin="dense"/>
             <Button variant="contained" color="success" size='large' onClick={sendQRCode}>
-                Success
+                Create 
             </Button>
             <h1>{qr}</h1>
             {qr?
