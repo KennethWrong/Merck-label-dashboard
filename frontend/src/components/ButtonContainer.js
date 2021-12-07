@@ -52,9 +52,9 @@ function ButtonContainer() {
       }
 
       <Stack className='button-grp' direction="row" spacing={2}>
-        {/* <div>
+        <div>
           <input type="file" onChange={(e) => handleFileChange(e)}/>
-        </div> */}
+        </div>
 
           <Button variant="contained" startIcon={<UploadIcon/>} onClick={(e) => handleFileSubmit(e)} type='button'>
             Upload 
