@@ -6,6 +6,7 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import axios from 'axios';
 import { Alert } from '@mui/material';
 import Box from '@material-ui/core/Box';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 
 
 function ButtonContainer() {
@@ -51,9 +52,9 @@ function ButtonContainer() {
       }
 
       <Stack className='button-grp' direction="row" spacing={2}>
-        <div>
+        {/* <div>
           <input type="file" onChange={(e) => handleFileChange(e)}/>
-        </div>
+        </div> */}
 
           <Button variant="contained" startIcon={<UploadIcon/>} onClick={(e) => handleFileSubmit(e)} type='button'>
             Upload 
