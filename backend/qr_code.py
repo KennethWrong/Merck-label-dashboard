@@ -14,15 +14,15 @@ def generate_hash_key(row, features_selected):
 
 # Link for website
 def create_qr_code(obj, date):
-        features_selected = ["batch_no","MK_number","sample_number"]
-        unique_hash = generate_hash_key(row, features_selected)
-        
-        #protein_concentration = obj['protein_concentration']
-        #batch_id = obj['batch_id']
-        #sample_id = obj['sample_id']
+        #features_selected = ["batch_no","MK_number","sample_number"]
+        #unique_hash = generate_hash_key(row, features_selected)
+       
+        protein_concentration = obj['protein_concentration']
+        batch_id = obj['batch_id']
+        sample_id = obj['sample_id']
 
-        #unique_hash = hash(sample_id+batch_id + protein_concentration)
-        #unique_hash = str(abs(unique_hash))[0:10]
+        unique_hash = hash(sample_id+batch_id + protein_concentration)
+        unique_hash = str(abs(unique_hash))[0:10]
         
         #Creating an instance of qrcode
         obj = {
