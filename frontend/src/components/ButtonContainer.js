@@ -3,9 +3,11 @@ import { Stack } from "@mui/material";
 import { Button } from "@mui/material";
 import UploadIcon from '@mui/icons-material/Upload';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
-import axios from 'axios'
+import axios from 'axios';
 import { Alert } from '@mui/material';
 import Box from '@material-ui/core/Box';
+import QrCodeIcon from '@mui/icons-material/QrCode';
+
 
 function ButtonContainer() {
   const [file, setFile] = useState(null)
@@ -58,7 +60,7 @@ function ButtonContainer() {
             Upload 
             </Button>
           <Button href='/QRScanner' variant="contained" startIcon={<QrCodeScannerIcon/>}>Scan Tag</Button>
-          <Button href='/create/qr_code' variant="contained" startIcon={<QrCodeScannerIcon/>}>Create QR Code</Button>
+          <Button href='/create/qr_code' variant="contained" startIcon={<QrCodeIcon/>}>Create QR Code</Button>
       </Stack>
     </>
   );

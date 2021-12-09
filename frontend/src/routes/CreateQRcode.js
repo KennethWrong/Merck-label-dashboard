@@ -1,5 +1,5 @@
-import react, { useState } from 'react'
-import { TextField } from '@mui/material'
+import react, { useState } from 'react';
+import { TextField } from '@mui/material';
 import { Button } from "@mui/material";
 import axios from 'axios';
 
@@ -60,4 +60,4 @@ function CreateQRcode(){
     )
 }
 
-export default CreateQRcode
+export default CreateQRcode;
