@@ -4,12 +4,14 @@ import pandas as pd
 import qr_code
 import datetime
 
+#Function for creating return responses for our backend
 def create_response(message='',status_code=200, mimetype='application/json'):
         response = make_response(message)
         response.status_code = status_code
         response.mimetype = mimetype
         return response
 
+# Insert new sample from fourm into our database
 def insert_new_sample(qr_code_key,json, date):
     conn = sqlite3.connect('data/database.db')
     cur = conn.cursor()
@@ -26,6 +28,7 @@ def insert_new_sample(qr_code_key,json, date):
     conn.close()
     return
 
+#Uses qr_code key to retrieve sample information from the database
 def retrieve_sample_information_with_key(qr_code_key):
         conn = sqlite3.connect('data/database.db')
         cur = conn.cursor()
@@ -50,6 +53,7 @@ def retrieve_sample_information_with_key(qr_code_key):
 
         return return_dic
 
+#Parse the CSV file into the database
 def parse_csv_to_db(file_path):
         try:
                 df = pd.read_csv(file_path)
