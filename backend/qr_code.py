@@ -7,7 +7,8 @@ def create_qr_code(obj, date):
         protein_concentration = obj['protein_concentration']
         batch_id = obj['batch_id']
         sample_id = obj['sample_id']
-
+        
+        #Implement nareen and yuki's hashing
         unique_hash = hash(sample_id+batch_id + protein_concentration)
         unique_hash = str(abs(unique_hash))[0:10]
         #Creating an instance of qrcode

@@ -42,6 +42,7 @@ def create_qr_code():
 def get_qr_code(qr_code_key):
     return send_file(f'qr_codes/{qr_code_key}.png', mimetype='image/png')
 
+
 @app.route('/csv',methods=['POST'])
 def dump_csv():
     file = request.files['csv']
@@ -52,7 +53,6 @@ def dump_csv():
     res = api_helper.parse_csv_to_db(full_path)
     
     return api_helper.create_response(status_code=res)
-
 
 if __name__ == '__main__':
     app.run(debug=True,port=5000)
