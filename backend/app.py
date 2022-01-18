@@ -27,7 +27,7 @@ def create_qr_code():
     qr = qr_code.create_qr_code(content, current_utc)
 
     #insert sample and information into qr_code
-    api_helper.insert_new_sample(qr, content, current_utc)
+    api_helper.insert_new_sample(qr, content)
     response = api_helper.create_response(qr)
     return response
 
@@ -47,9 +47,9 @@ def dump_csv():
     full_path = os.path.join(dir_path,f"{filename}")
     #Save the file
     file.save(full_path)
-    res = api_helper.parse_csv_to_db(full_path)
-    
-    return api_helper.create_response(status_code=res)
+    values = [0,0]
+    res = api_helper.parse_csv_to_db(full_path,values)
+    return api_helper.create_response(status_code=res, message=f"Total Entries:{values[0]+values[1]} New:{values[0]} Updated:{values[1]}")
 
 
 if __name__ == '__main__':

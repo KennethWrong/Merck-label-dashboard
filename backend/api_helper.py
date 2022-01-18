@@ -2,7 +2,13 @@ from flask import make_response
 import sqlite3
 import pandas as pd
 import qr_code
-import datetime
+from schema import samples
+from datetime import datetime
+from sqlalchemy import create_engine, select
+import os
+
+db_path = os.path.join(os.getcwd(),'data','database.db')
+engine = create_engine(f'sqlite:///{db_path}')
 
 #Function for creating return responses for our backend
 def create_response(message='',status_code=200, mimetype='application/json'):
@@ -12,69 +18,83 @@ def create_response(message='',status_code=200, mimetype='application/json'):
         return response
 
 # Insert new sample from fourm into our database
-def insert_new_sample(qr_code_key,json, date):
-    conn = sqlite3.connect('data/database.db')
-    cur = conn.cursor()
-
+def insert_new_sample(qr_code_key,json):
     qr_code_key = str(qr_code_key)
     sample_id = str(json['sample_id'])
     batch_id = str(json['batch_id'])
     protein_concentration = str(json['protein_concentration'])
-
-    cur.execute("INSERT INTO samples (qr_code_key, sample_id, batch_id, protein_concentration, date_entered) VALUES (?,?,?,?,?)",
-                (qr_code_key,sample_id,batch_id,protein_concentration, date))
-
-    conn.commit()
+    exists = check_if_key_exists(qr_code_key)
+    conn = engine.connect()
+    if exists:
+            sql = samples.update().values(sample_id=sample_id,batch_id=batch_id,protein_concentration=protein_concentration).\
+                    where(samples.c.qr_code_key == qr_code_key)
+            conn.execute(sql)
+            conn.close()
+            return False
+    else:
+        conn.execute(samples.insert(), [
+                {
+                        'qr_code_key':qr_code_key,
+                        'sample_id':sample_id,
+                        'batch_id':batch_id,
+                        'protein_concentration': protein_concentration,
+                }
+        ])
     conn.close()
-    return
+    return True
+    
 
 #Uses qr_code key to retrieve sample information from the database
 def retrieve_sample_information_with_key(qr_code_key):
         conn = sqlite3.connect('data/database.db')
-        cur = conn.cursor()
         return_dic = {}
-
         qr_code_key = str(qr_code_key)
 
-        cur.execute("SELECT * FROM samples WHERE qr_code_key=?",
-                        (qr_code_key,))
-        
-        res = cur.fetchall()
-        conn.commit()
-        conn.close()
-
+        conn = engine.connect()
+        sql = select([samples]).where((samples.c.qr_code_key == qr_code_key))
+        res = conn.execute(sql)
+        res = res.fetchall()
         content = res[0]
 
-        return_dic['qr_code_key'] = content[0]
-        return_dic['sample_id'] = content[1]
-        return_dic['batch_id'] = content[2]
-        return_dic['protein_concentration'] = content[3]
-        return_dic['date_entered'] = content[4]
+        return_dic = {
+                'qr_code_key': content[0],
+                'sample_id': content[1],
+                'batch_id': content[2],
+                'protein_concentration': content[3],
+                'date_entered': content[4],
+        }
+        conn.close()
 
         return return_dic
 
+def check_if_key_exists(qr_code_key):
+        conn = engine.connect()
+        sql = select([samples]).where((samples.c.qr_code_key == qr_code_key))
+        res = conn.execute(sql)
+        res = res.fetchall()
+        
+        return True if len(res) > 0 else False
+
+
 #Parse the CSV file into the database
-def parse_csv_to_db(file_path):
+def parse_csv_to_db(file_path,info):
+        conn = engine.connect()
         try:
                 df = pd.read_csv(file_path)
+                updated, added = 0,0
                 qr_codes = []
-                current_utc = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                current_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 for index,row in df.iterrows():
                         dic = {
-                                'sample_id': row['sample_id'],
-                                'batch_id': row['batch_id'],
-                                'protein_concentration': row['protein_concentration'],
+                                'sample_id': str(row['sample_id']),
+                                'batch_id': str(row['batch_id']),
+                                'protein_concentration': str(row['protein_concentration']),
                         }
-                        code = qr_code.create_qr_code(dic, current_utc)
-                        qr_codes.append(code)
-                qr_codes = pd.DataFrame(qr_codes)
-                df['qr_code_key'] = qr_codes
-
-                conn = sqlite3.connect('data/database.db')
-                #have to resolve if data types are the same, perhaps change this to a for loop and appending rows 1 by 1
-                #When data is the same we simply skip or update
-                df.to_sql('samples', conn, index = False, if_exists='append')
-                conn.commit()
+                        qr_code_key = qr_code.create_qr_code(dic, current_utc)
+                        if insert_new_sample(qr_code_key, dic):
+                                info[0] += 1
+                        else:
+                                info[1] += 1
                 conn.close()
                 return 200
         except Exception as e:

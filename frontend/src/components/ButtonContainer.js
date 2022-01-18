@@ -26,10 +26,10 @@ function ButtonContainer() {
     formData.append('csv',file)
     try{
     let res = await axios.post('http://localhost:5000/csv', formData)
-    setSuccessMessage(true)
+    setSuccessMessage(res.data)
     setTimeout(() => {
       setSuccessMessage(false)
-    },1500)
+    },2000)
     }catch{
       setErrorMessage(true)
       setTimeout(() => {
@@ -42,7 +42,7 @@ function ButtonContainer() {
     <>
       {successMessage?
       <Box mt={5} mb={5}>
-        <Alert severity="success" style={{ fontSize: '40px' }}>CSV File Upload Successful</Alert>
+        <Alert severity="success" style={{ fontSize: '40px' }}>{successMessage}</Alert>
       </Box>:''
       }
       {errorMessage?

@@ -1,12 +1,14 @@
 import qrcode
-import sys
 import hashlib
+import os
+
 
 def generate_hash_key(row, features_selected):
     # initialize hash_key as empty string
     hash_key = ""
     # concatenate values from given features to generate hash_key
     for feature in features_selected:
+        print(feature)
         hash_key += str(row[feature]) + ""
     hash_key = hashlib.sha256(hash_key.encode()).hexdigest()
     # return hash_key
@@ -22,8 +24,8 @@ def create_qr_code(obj, date):
         sample_id = obj['sample_id']
         
         #Implement nareen and yuki's hashing
-        unique_hash = hash(sample_id+batch_id + protein_concentration)
-        unique_hash = str(abs(unique_hash))[0:10]
+        unique_hash = f"{sample_id[0:3]}-{batch_id[0:3]}-{protein_concentration[0:3]}"
+        unique_hash = str(unique_hash)
         
         #Creating an instance of qrcode
         obj = {
@@ -38,6 +40,7 @@ def create_qr_code(obj, date):
         qr.add_data(obj)
         qr.make(fit=True)
         img = qr.make_image(fill='black', back_color='white')
-        img.save(f'/Users/werunm/Desktop/Merck-label-dashboard/backend/qr_codes/{unique_hash}.png')
+        qr_code_dir = os.path.join(os.getcwd(),'backend','qr_codes')
+        img.save(f'{qr_code_dir}/{unique_hash}.png')
         return unique_hash
 
