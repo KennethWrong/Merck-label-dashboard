@@ -17,23 +17,13 @@
 4. Frontend will be running on localhost:3000
 
 ### Backend
-1. CD to the backend folder.
-2. Run the command `pip install -r requirements.txt` to download the dependencies and their respective versions
-3. CD ../ back to merck directory
-4. FOR MAC: Run the command `python3 app.py` to start the flask server.
-5. FOR WINDOWS: Run the command `python app.py` to start the flask server.
+1. Run the command `pip install -r requirements.txt`
+4. FOR MAC: Run the command `python3 ./backend/app.py` to start the flask server.
+5. FOR WINDOWS: Run the command `python ./backend/app.py` to start the flask server.
 6. The backend will be running on localhost:5000
 
 ### Connecting frontend and backend
 1. To make calls from the front-end to backend we will be making http calls to  `http://localhost:5000/<api-endpoint>`
-
-### Test with just backend serving front-end pages
-1. As of right now we are separating front-end and backend. To combine the two you would do the following.
-2. CD to frontend
-3. `npm run build`
-4. Uncomment code in app.py that says for deployment
-5. run app.py file and go to localhost:5000
-**NOTE: When deploying like this, changes in the front-end will not show**
 
 ## Future Plans
 - Temporarily using SQLite as a relational database until we get access to AWS PostGreSQL.
