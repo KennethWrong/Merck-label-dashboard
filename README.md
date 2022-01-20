@@ -30,6 +30,4 @@
 - Will also add ability to batch dump .csv files into S3 Bucket.
 - Containerize and scale web application with docker, k8.
 
-## Phase 1 of Website
-<img width="741" alt="Screen Shot 2021-11-22 at 11 34 17 AM" src="https://user-images.githubusercontent.com/70383225/142899733-6c013787-0480-4e1c-81a6-9ed78eebccb3.png">
 
