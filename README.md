@@ -8,6 +8,8 @@
 1. IF YOU DON'T HAVE THE DEPENDENCIES: `run the command bash ./scripts/install.sh `
 2. IF YOU HAVE THE DEPENDENCIES: `run the command bash ./scripts/dev.sh`
 
+### OLD METHOD
+
 ### Frontend
 1. CD into frontend 
 2. Run command `npm install` to install dependencies and react packages.
