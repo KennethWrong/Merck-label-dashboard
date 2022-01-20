@@ -2,7 +2,11 @@
 
 
 ## How to run the project
-You would have to run the backend and frontend in two different terminal tabs.
+
+## UPDATED METHOD
+### WARNING: ONLY TESTED FOR MAC
+1. IF YOU DON'T HAVE THE DEPENDENCIES: `run the command bash ./scripts/install.sh `
+2. IF YOU HAVE THE DEPENDENCIES: `run the command bash ./scripts/dev.sh`
 
 ### Frontend
 1. CD into frontend 
