@@ -3,8 +3,8 @@
 
 ## How to run the project
 
-## UPDATED METHOD
-### WARNING: ONLY TESTED FOR MAC
+### UPDATED METHOD
+#### WARNING: ONLY TESTED FOR MAC
 1. IF YOU DON'T HAVE THE DEPENDENCIES: `run the command bash ./scripts/install.sh `
 2. IF YOU HAVE THE DEPENDENCIES: `run the command bash ./scripts/dev.sh`
 
