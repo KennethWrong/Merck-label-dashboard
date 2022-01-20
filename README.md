@@ -10,8 +10,10 @@ You would have to run the backend and frontend in two different terminal tabs.
 3. Frontend will be running on port:3000
 
 ### Backend
-1. Simply run the app.py folder in the backend folder to start the flask server.
-2. The backend will be running on port:5000
+1. CD to the backend folder.
+2. Run the command `pip install -r requirements.txt` to download the dependencies and their respective versions
+3. Simply run the app.py file in the backend folder to start the flask server.
+4. The backend will be running on localhost:5000
 
 ### Connecting frontend and backend
 1. To make calls from the front-end to backend we will be making http calls to  `http://localhost:5000/<api-endpoint>`
@@ -23,8 +25,12 @@ You would have to run the backend and frontend in two different terminal tabs.
 4. Uncomment code in app.py that says for deployment
 5. run app.py file and go to localhost:5000
 **NOTE: When deploying like this, changes in the front-end will not show**
+
+##Future Plans
+- Temporarily using SQLite as a relational database until we get access to AWS PostGreSQL.
+- Will also add ability to batch dump .csv files into S3 Bucket.
+- Containerize and scale web application with docker, k8.
+
 ## Phase 1 of Website
 <img width="741" alt="Screen Shot 2021-11-22 at 11 34 17 AM" src="https://user-images.githubusercontent.com/70383225/142899733-6c013787-0480-4e1c-81a6-9ed78eebccb3.png">
-- Temporarily using SQLite as a relational database until we get access to AWS RedShift
-- Will implement csv parsing and table lookup
-- Will also add ability to batch dump .csv files into S3 Bucket
+
