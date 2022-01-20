@@ -5,9 +5,10 @@
 You would have to run the backend and frontend in two different terminal tabs.
 
 ### Frontend
-1. CD into frontend and do npm install do install all dependencies and react packages.
-2. Then do npm run start to start up the front-end 
-3. Frontend will be running on port:3000
+1. CD into frontend 
+2. Run command `npm install` to install dependencies and react packages.
+3. Then run command `npm run start` to start up the front-end 
+4. Frontend will be running on localhost:3000
 
 ### Backend
 1. CD to the backend folder.
