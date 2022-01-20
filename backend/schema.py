@@ -7,6 +7,7 @@ import os
 # This file is just for the creation of our database along with the table 'samples'        #
 ##########################################################################################
 db_path = os.path.join(os.getcwd(),'data','database.db')
+print(db_path)
 engine = create_engine(f'sqlite:///{db_path}')
 conn = engine.connect()
 
