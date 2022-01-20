@@ -26,7 +26,7 @@ You would have to run the backend and frontend in two different terminal tabs.
 5. run app.py file and go to localhost:5000
 **NOTE: When deploying like this, changes in the front-end will not show**
 
-##Future Plans
+## Future Plans
 - Temporarily using SQLite as a relational database until we get access to AWS PostGreSQL.
 - Will also add ability to batch dump .csv files into S3 Bucket.
 - Containerize and scale web application with docker, k8.
