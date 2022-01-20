@@ -13,8 +13,10 @@ You would have to run the backend and frontend in two different terminal tabs.
 ### Backend
 1. CD to the backend folder.
 2. Run the command `pip install -r requirements.txt` to download the dependencies and their respective versions
-3. Simply run the app.py file in the backend folder to start the flask server.
-4. The backend will be running on localhost:5000
+3. CD ../ back to merck directory
+4. FOR MAC: Run the command `python3 app.py` to start the flask server.
+5. FOR WINDOWS: Run the command `python app.py` to start the flask server.
+6. The backend will be running on localhost:5000
 
 ### Connecting frontend and backend
 1. To make calls from the front-end to backend we will be making http calls to  `http://localhost:5000/<api-endpoint>`
