@@ -1,5 +1,5 @@
+from importlib.machinery import DEBUG_BYTECODE_SUFFIXES
 from flask import make_response
-import sqlite3
 import pandas as pd
 import qr_code
 from schema import samples
@@ -34,9 +34,8 @@ def create_response(message='',status_code=200, mimetype='application/json'):
         response.mimetype = mimetype
         return response
 
-
 ############################################################
-# Function_name: create_response
+# Function_name: insert_new_sample
 #
 # Function_logic:
 # Inserts newly retrieved sample (both from CSV and input form) into our data base.
@@ -95,7 +94,6 @@ def insert_new_sample(qr_code_key,sample_obj):
 #    - return_dic: All columns of sample in the DB
 ############################################################
 def retrieve_sample_information_with_key(qr_code_key):
-        conn = sqlite3.connect('data/database.db')
         return_dic = {}
         qr_code_key = str(qr_code_key)
 
@@ -103,7 +101,7 @@ def retrieve_sample_information_with_key(qr_code_key):
         sql = select([samples]).where((samples.c.qr_code_key == qr_code_key))
         res = conn.execute(sql)
 
-        #Needs error handelling in the case that the qr_code_key does not exist in DB
+        # Needs error handelling in the case that the qr_code_key does not exist in DB
         res = res.fetchall()
         content = res[0]
 
@@ -161,12 +159,10 @@ def parse_csv_to_db(file_path,info):
         conn = engine.connect()
         try:
                 df = pd.read_csv(file_path)
-                updated, added = 0,0
-                qr_codes = []
                 current_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                 for index,row in df.iterrows():
 
-                        #Convert dataframe rows into a JSON obj
+                        #Convert dataframe rows into a JSON obj (dictionary)
                         dic = {
                                 'sample_id': str(row['sample_id']),
                                 'batch_id': str(row['batch_id']),

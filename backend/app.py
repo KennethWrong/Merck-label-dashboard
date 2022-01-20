@@ -15,7 +15,6 @@ def get_vile_info_from_qr_code():
     content = request.json
     qr_code_key = content['qr_code_key']
     info = api_helper.retrieve_sample_information_with_key(qr_code_key)
-
     response = api_helper.create_response(info)
     return response
 
@@ -34,7 +33,7 @@ def create_qr_code():
 #Return generated .png of qr_code to the front-end
 @app.route('/assets/qr_code/<qr_code_key>',methods=['GET'])
 def get_qr_code(qr_code_key):
-    return send_file(f'qr_codes/{qr_code_key}.png', mimetype='image/png')
+    return send_file(f"qr_codes/{qr_code_key}.png", mimetype='image/png')
 
 #For front-end sending CSV to backend
 @app.route('/csv',methods=['POST'])

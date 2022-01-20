@@ -1,7 +1,0 @@
-# exclude everything in qr code folder
-qr_codes/*
-
-# but keep the qr code folder
-!qr_codes/.gitkeep 
-
-dockerfile

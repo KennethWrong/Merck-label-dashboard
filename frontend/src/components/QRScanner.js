@@ -39,6 +39,7 @@ function QRScanner () {
                     'qr_code_key':qrScan
                 }
                 try{
+                    //post request to our backend
                     let res = await axios.post('http://localhost:5000/scan/qr_code',obj)
                     let responseJSON = res.data
 

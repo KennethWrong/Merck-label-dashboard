@@ -20,7 +20,6 @@ def generate_hash_key(row, features_selected):
     hash_key = ""
     # concatenate values from given features to generate hash_key
     for feature in features_selected:
-        print(feature)
         hash_key += str(row[feature]) + ""
     hash_key = hashlib.sha256(hash_key.encode()).hexdigest()
     # return hash_key
