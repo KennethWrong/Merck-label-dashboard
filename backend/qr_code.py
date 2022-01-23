@@ -46,8 +46,12 @@ def create_qr_code(obj, date):
         sample_id = obj['sample_id']
         
         #Temporary hashing function (will need improving)
-        unique_hash = f"{sample_id[0:3]}-{batch_id[0:3]}-{protein_concentration[0:3]}"
-        unique_hash = str(unique_hash)
+        #unique_hash = f"{sample_id[0:3]}-{batch_id[0:3]}-{protein_concentration[0:3]}"
+        #unique_hash = str(unique_hash)
+        
+        #Modified hash key (need to improve with order-carefree)
+        features_selected = ['sample_id','batch_id','protein_concentration']
+        unique_hash = generate_hash_key(obj, features_selected) # a string
         
         #Creating an instance of qrcode
         obj = {
