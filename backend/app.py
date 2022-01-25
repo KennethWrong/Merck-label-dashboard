@@ -1,3 +1,4 @@
+from email import message
 from flask import Flask,send_from_directory, request, send_file
 import api_helper
 from flask_cors import CORS, cross_origin
@@ -14,9 +15,10 @@ CORS(app)
 def get_vile_info_from_qr_code():
     content = request.json
     qr_code_key = content['qr_code_key']
-    info = api_helper.retrieve_sample_information_with_key(qr_code_key)
+    info,message = api_helper.retrieve_sample_information_with_key(qr_code_key)
     response = api_helper.create_response(info)
-    return response
+    response_message = api_helper.create_response(message)
+    return response, response_message
 
 #End point for creating qr_code
 @app.route('/create/qr_code', methods=['POST'])
