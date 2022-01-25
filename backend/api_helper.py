@@ -101,10 +101,16 @@ def retrieve_sample_information_with_key(qr_code_key):
         sql = select([samples]).where((samples.c.qr_code_key == qr_code_key))
         res = conn.execute(sql)
 
-        # Needs error handelling in the case that the qr_code_key does not exist in DB
+        # get all results matching hash key from database
         res = res.fetchall()
-        content = res[0]
-
+        # if qr_code_key does not exist in DB
+        if len(res) == 0: # because when hash key not found in the database, res is an empty list
+                content = [0,0,0,0,0] # fake content, just make sure the code run well
+                message = "fail"
+        else: # qr_code_key exists in DB
+                content = res[0] # if res is None, it will say invalid index
+                message = "success"
+        
         return_dic = {
                 'qr_code_key': content[0],
                 'sample_id': content[1],
@@ -114,7 +120,7 @@ def retrieve_sample_information_with_key(qr_code_key):
         }
         conn.close()
 
-        return return_dic
+        return return_dic,message
 
 
 ############################################################
