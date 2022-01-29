@@ -7,6 +7,7 @@ import axios from "axios";
 import { Alert } from "@mui/material";
 import Box from "@material-ui/core/Box";
 import QrCodeIcon from "@mui/icons-material/QrCode";
+import ImageSearchIcon from "@mui/icons-material/ImageSearch";
 
 function ButtonContainer() {
   const [file, setFile] = useState(null);
@@ -51,7 +52,7 @@ function ButtonContainer() {
       {errorMessage ? (
         <Box mt={5} mb={5}>
           <Alert severity="error" style={{ fontSize: "40px" }}>
-            CSV File Upload failed, Please check file 
+            CSV File Upload failed, Please check file
           </Alert>
         </Box>
       ) : (
@@ -63,17 +64,15 @@ function ButtonContainer() {
           <input type="file" onChange={(e) => handleFileChange(e)} />
         </div>
 
-        {
-          <Button
-            disabled={file ? false : true}
-            variant="contained"
-            startIcon={<UploadIcon />}
-            onClick={(e) => handleFileSubmit(e)}
-            type="button"
-          >
-            Upload
-          </Button>
-        }
+        <Button
+          disabled={file ? false : true}
+          variant="contained"
+          startIcon={<UploadIcon />}
+          onClick={(e) => handleFileSubmit(e)}
+        >
+          Upload
+        </Button>
+
         <Button
           href="/QRScanner"
           variant="contained"
@@ -87,6 +86,13 @@ function ButtonContainer() {
           startIcon={<QrCodeIcon />}
         >
           Create QR Code
+        </Button>
+        <Button
+          href="/findProduct"
+          variant="contained"
+          startIcon={<ImageSearchIcon />}
+        >
+          Find Product
         </Button>
       </Stack>
     </>

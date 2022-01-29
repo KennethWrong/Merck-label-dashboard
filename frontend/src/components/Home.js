@@ -55,14 +55,14 @@ function Home() {
             MERCK Dashboard
         </Typography> */}
       <br />
-        <Stack
-        direction='row'
-        justifyContent='center'
-        alignItems='center'
+      <Stack
+        direction="row"
+        justifyContent="center"
+        alignItems="center"
         spacing={2}
-        >
+      >
         <DataGrid rows={rows} columns={columns} disableSelectionOnClick />
-        </Stack>
+      </Stack>
     </>
   );
 }
