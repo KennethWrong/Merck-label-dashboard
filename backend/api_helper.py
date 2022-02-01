@@ -1,18 +1,19 @@
 from importlib.machinery import DEBUG_BYTECODE_SUFFIXES
-from flask import make_response
+from random import sample
+from webbrowser import get
+from flask import make_response, json
 import pandas as pd
 import qr_code
-from schema import samples
 from datetime import datetime
 from sqlalchemy import create_engine, select
-import os
+from sqlalchemy.orm import sessionmaker
+from schema import Sample, get_database_uri
 
-##These two lines of code will change oncce we get our online PostGreSQL
-#Find the local database in file system
-db_path = os.path.join(os.getcwd(),'data','database.db')
-#Creates a SQLAlchemy engine to perform CRUD on DB
-engine = create_engine(f'sqlite:///{db_path}')
-
+#Creates a session with your local postgresql database
+DATABASE_URI = get_database_uri()
+db = create_engine(DATABASE_URI) 
+Session = sessionmaker(db) 
+session = Session()
 
 ############################################################
 # Function_name: create_response
@@ -34,6 +35,13 @@ def create_response(message='',status_code=200, mimetype='application/json'):
         response.mimetype = mimetype
         return response
 
+def create_response_from_scanning(message="", status_code=200, mimetype='application/json'):
+        response = make_response(json.dumps(message))
+        response.status_code = status_code
+        response.mimetype = mimetype
+        return response
+
+
 ############################################################
 # Function_name: insert_new_sample
 #
@@ -48,35 +56,40 @@ def create_response(message='',status_code=200, mimetype='application/json'):
 #    - Bool: Returns True/False on whether our insertion was a duplicate or unique
 ############################################################
 def insert_new_sample(qr_code_key,sample_obj):
-    qr_code_key = str(qr_code_key)
-    sample_id = str(sample_obj['sample_id'])
-    batch_id = str(sample_obj['batch_id'])
-    protein_concentration = str(sample_obj['protein_concentration'])
+    sample_name = str(sample_obj['sample_name'])
+    test_round = int(sample_obj['test_round'])
+    sample_consistency = float(sample_obj['sample_consistency'])
+    analyst = str(sample_obj['analyst'])
+    expiration_date = sample_obj['expiration_date']
+    date_entered = sample_obj['date_entered']
+    date_modified = date_entered
 
     #Checks if this qr_code_key created already exists in our DB. Returns True if exists
+
     exists = check_if_key_exists(qr_code_key)
-
-    #Creating a connection obj by connecting to our DB so that we can perform CRUD
-    conn = engine.connect()
-
     #Updates existing sample if qr_code exists in our DB
     if exists:
-            sql = samples.update().values(sample_id=sample_id,batch_id=batch_id,protein_concentration=protein_concentration).\
-                    where(samples.c.qr_code_key == qr_code_key)
-            conn.execute(sql)
-            conn.close()
+            session.query(Sample).filter(Sample.qr_code_key == qr_code_key).\
+                    update({Sample.sample_name: sample_name,
+                            Sample.test_round: test_round,
+                            Sample.sample_consistency: sample_consistency,
+                            Sample.analyst: analyst,
+                            Sample.date_modified: date_modified}, synchronize_session = False)
+            session.commit()
             return False
     #If sample inserting to DB is unique
     else:
-        conn.execute(samples.insert(), [
-                {
-                        'qr_code_key':qr_code_key,
-                        'sample_id':sample_id,
-                        'batch_id':batch_id,
-                        'protein_concentration': protein_concentration,
-                }
-        ])
-    conn.close()
+        new_sample = Sample(qr_code_key = qr_code_key,
+                            sample_name = sample_name,
+                            test_round = test_round,
+                            sample_consistency = sample_consistency,
+                            analyst = analyst,
+                            date_entered = date_entered,
+                            date_modified = date_modified,
+                            expiration_date = expiration_date)
+        session.add(new_sample)
+        session.commit()
+
     return True
     
 
@@ -97,30 +110,26 @@ def retrieve_sample_information_with_key(qr_code_key):
         return_dic = {}
         qr_code_key = str(qr_code_key)
 
-        conn = engine.connect()
-        sql = select([samples]).where((samples.c.qr_code_key == qr_code_key))
-        res = conn.execute(sql)
-
-        # get all results matching hash key from database
-        res = res.fetchall()
+        res = session.query(Sample).filter(Sample.qr_code_key == qr_code_key).first()
         # if qr_code_key does not exist in DB
-        if len(res) == 0: # because when hash key not found in the database, res is an empty list
-                content = [0,0,0,0,0] # fake content, just make sure the code run well
-                message = "fail"
-        else: # qr_code_key exists in DB
-                content = res[0] # if res is None, it will say invalid index
-                message = "success"
-        
-        return_dic = {
-                'qr_code_key': content[0],
-                'sample_id': content[1],
-                'batch_id': content[2],
-                'protein_concentration': content[3],
-                'date_entered': content[4],
-        }
-        conn.close()
+        if not res:
+                return {}, 404
 
-        return return_dic,message
+        else: # qr_code_key exists in DB
+                content = res # if res is None, it will say invalid index
+        
+                return_dic = {
+                        'qr_code_key': content.qr_code_key,
+                        'sample_name': content.sample_name,
+                        'batch_id': content.test_round,
+                        'protein_concentration': content.sample_consistency,
+                        'analyst': content.analyst,
+                        'date_entered': content.date_entered,
+                        'date_modified': content.date_modified,
+                        'expiration_date': content.expiration_date
+                }
+
+        return return_dic, 200
 
 
 ############################################################
@@ -137,12 +146,8 @@ def retrieve_sample_information_with_key(qr_code_key):
 #    - Bool: True meaning that qr_code_key exists, False meaning that it doesn't
 ############################################################
 def check_if_key_exists(qr_code_key):
-        conn = engine.connect()
-        sql = select([samples]).where((samples.c.qr_code_key == qr_code_key))
-        res = conn.execute(sql)
-        res = res.fetchall()
-        
-        return True if len(res) > 0 else False
+        res = session.query(Sample.qr_code_key).filter_by(qr_code_key=qr_code_key).first()
+        return True if res else False
 
 
 ############################################################
@@ -162,17 +167,20 @@ def check_if_key_exists(qr_code_key):
 #    - Status-Code: 200 if successful, 500 if unsuccessful
 ############################################################
 def parse_csv_to_db(file_path,info):
-        conn = engine.connect()
         try:
                 df = pd.read_csv(file_path)
-                current_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                current_utc = datetime.utcnow()
                 for index,row in df.iterrows():
 
                         #Convert dataframe rows into a JSON obj (dictionary)
                         dic = {
-                                'sample_id': str(row['sample_id']),
-                                'batch_id': str(row['batch_id']),
-                                'protein_concentration': str(row['protein_concentration']),
+                                'sample_name': row['sample_name'],
+                                'batch_id': row['batch_id'],
+                                'protein_concentration': row['protein_concentration'],
+                                'analyst': row['analyst'],
+                                'date_entered': row['date_entered'],
+                                'date_modified': row['date_modified'],
+                                'expiration_date': row['expiration_date']
                         }
 
                         qr_code_key = qr_code.create_qr_code(dic, current_utc)
@@ -182,7 +190,7 @@ def parse_csv_to_db(file_path,info):
                         #If we are inserting an exisiting sample, we update updated_insert_count
                         else:
                                 info[1] += 1
-                conn.close()
+
                 return 200
         except Exception as e:
                 print(e)

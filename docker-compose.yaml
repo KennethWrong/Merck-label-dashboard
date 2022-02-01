@@ -1,32 +1,28 @@
-version: '3.6'
+version: '3'
 
 services:
   flask-backend:
+    container_name: flask-backend
     build: ./backend
-    
     environment:
-      STAGE: test
-      SQLALCHEMY_DATABASE_URI: postgresql+psycopg2://admin:password@db/samples
-    
-    networks:
-      - default
+      POSTGRES_USERNAME: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: db
+      POSTGRES_DATABASE: test
     ports:
       - 5000:5000
-
+    volumes:
+      - ./backend:/server
+    depends_on:
+      - db
     restart: always
     
   db:
-  environment:
-    POSTGRES_USER: admin
-    POSTGRES_PASSWORD: password
-    POSTGRES_DB: samples
-
-  image: postgres:14.1-alpine
-
-  networks:
-    - default
-  ports:
-    - 5405:5432
-  restart: always
-  volumes:
-    - ./postgres-data:/var/lib/postgresql/data
+    container_name: db
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
