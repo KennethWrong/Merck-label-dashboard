@@ -1,4 +1,3 @@
-from email import message
 from flask import Flask,send_from_directory, request, send_file
 import api_helper
 from flask_cors import CORS, cross_origin
@@ -15,17 +14,18 @@ CORS(app)
 def get_vile_info_from_qr_code():
     content = request.json
     qr_code_key = content['qr_code_key']
-    info,message = api_helper.retrieve_sample_information_with_key(qr_code_key)
-    response = api_helper.create_response(info)
-    response_message = api_helper.create_response(message)
-    return response, response_message
+    info,status = api_helper.retrieve_sample_information_with_key(qr_code_key)
+    response = api_helper.create_response_from_scanning(info, status_code=status)
+    return response
 
 #End point for creating qr_code
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    current_utc = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    qr = qr_code.create_qr_code(content, current_utc)
+    current_utc = datetime.datetime.utcnow()
+    content['date_entered'] = current_utc.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    content['expiration_date'] = current_utc + datetime.timedelta(days=14)
+    qr = qr_code.create_qr_code(content)
 
     #insert sample and information into qr_code
     api_helper.insert_new_sample(qr, content)
@@ -44,6 +44,7 @@ def dump_csv():
     file = request.files['csv']
     filename = secure_filename(file.filename)
     #Get path of the csv file to place .csv file into the folder
+    print(os.getcwd())
     dir_path = os.path.join(os.getcwd(),'csv')
     full_path = os.path.join(dir_path,f"{filename}")
     #Save the file
@@ -54,4 +55,5 @@ def dump_csv():
 
 
 if __name__ == '__main__':
-    app.run(debug=True,port=5000)
+    app.run(debug=True,host='0.0.0.0')
+    # app.run(debug=True, port=5000)
