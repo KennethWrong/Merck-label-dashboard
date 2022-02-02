@@ -21,7 +21,8 @@
     "react-qr-reader": "^2.2.1",
     "react-router-dom": "^6.0.2",
     "react-scripts": "4.0.3",
-    "web-vitals": "^1.1.2"
+    "web-vitals": "^1.1.2",
+    "react-webcam": "^6.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
