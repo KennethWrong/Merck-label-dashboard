@@ -5,6 +5,10 @@ from werkzeug.utils import secure_filename
 import qr_code
 import datetime
 import os
+from PIL import Image
+from io import BytesIO, StringIO
+import base64
+import re
 
 app = Flask(__name__, static_url_path='')
 CORS(app)
@@ -52,6 +56,15 @@ def dump_csv():
     values = [0,0]
     res = api_helper.parse_csv_to_db(full_path,values)
     return api_helper.create_response(status_code=res, message=f"Total Entries:{values[0]+values[1]} New:{values[0]} Updated:{values[1]}")
+
+#/upload/label_image
+@app.route('/upload/label_image', methods=['POST'])
+def upload_label_image():
+    image_data = re.sub('^data:image/.+;base64,', '', request.form['file'])
+    
+    with open('/server/image_save.jpg','wb') as fh:
+        fh.write(base64.b64decode(image_data))
+    return api_helper.create_response()
 
 
 if __name__ == '__main__':

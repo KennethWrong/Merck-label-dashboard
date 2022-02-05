@@ -12,7 +12,6 @@ pg_username = os.getenv('POSTGRES_USERNAME')
 pg_password = os.getenv('POSTGRES_PASSWORD')
 
 #Your username and password
-print(f"postgresql+psycopg2://{pg_username}:{pg_password}@{pg_host}/{pg_database}")
 db = create_engine(f"postgresql+psycopg2://{pg_username}:{pg_password}@{pg_host}/{pg_database}") 
 base = declarative_base()
 
