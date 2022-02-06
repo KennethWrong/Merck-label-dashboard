@@ -61,8 +61,9 @@ def dump_csv():
 @app.route('/upload/label_image', methods=['POST'])
 def upload_label_image():
     image_data = re.sub('^data:image/.+;base64,', '', request.form['file'])
-    
-    with open('/server/image_save.jpg','wb') as fh:
+    image_title = datetime.datetime.utcnow().strftime("%m-%d-%Y_%H:%M:%S")
+
+    with open(f'/server/images/{image_title}.jpg','wb') as fh:
         fh.write(base64.b64decode(image_data))
     return api_helper.create_response()
 

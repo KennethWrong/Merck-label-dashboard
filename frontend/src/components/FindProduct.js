@@ -16,25 +16,20 @@ import axios from "axios";
 
 export const FindProduct = () => {
   const camRef = useRef(null);
-  const [image, setImage] = useState(null);
-  const capture = useCallback(() => {
+
+  const capture = useCallback( async () => {
     if (camRef) {
       const imgSrc = camRef.current.getScreenshot();
-      setImage(imgSrc);
+      const formData = new FormData();
+      formData.append("file", imgSrc);
+      try {
+        const res = await axios.post("http://localhost:5000/upload/label_image", formData);
+        console.log(res.data);
+      } catch {
+        console.log("error in submission");
+      }
     }
   }, [camRef]);
-
-  const handleFileSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("img", image);
-    try {
-      const res = await axios.post("http://localhost:5000/csv", formData);
-      console.log(res.data);
-    } catch {
-      console.log("error in submission");
-    }
-  };
 
   return (
     <Stack
@@ -56,7 +51,6 @@ export const FindProduct = () => {
             onClick={(e) => {
               e.preventDefault();
               capture();
-              handleFileSubmit(e);
             }}
           >
             <PhotoCameraIcon />
