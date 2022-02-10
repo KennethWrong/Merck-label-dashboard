@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import Webcam from "react-webcam";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import axios from "axios";
 
 export const FindProduct = () => {
