@@ -5,6 +5,8 @@ import axios from "axios";
 
 // analyst, expiry, contents, experimentId, storageCondition, size
 
+const sizes = ["2mL", "2.5mL", "4mL","20mL"];
+
 function CreateQRcode() {
   const [analyst, setAnalyst] = useState("");
   //TODO: do we need this to be a date picker or a text field is fine?
@@ -12,7 +14,7 @@ function CreateQRcode() {
   const [contents, setContents] = useState("");
   const [experimentId, setExperimentId] = useState("");
   const [storageCondition, setStorageCondition] = useState("");
-  const [size, setSize] = useState("s");
+  const [size, setSize] = useState(sizes[0]);
   const [qr, setQR] = useState("");
 
   const handleChangeAnalyst = (e) => {
@@ -109,30 +111,20 @@ function CreateQRcode() {
           variant="filled"
         />
         <Stack spacing={2} direction={"row"}>
-          <Button
-            variant={size === "s" ? "contained" : "outlined"}
-            onClick={() => {
-              setSize("s");
-            }}
-          >
-            S
-          </Button>
-          <Button
-            variant={size === "m" ? "contained" : "outlined"}
-            onClick={() => {
-              setSize("m");
-            }}
-          >
-            M
-          </Button>
-          <Button
-            variant={size === "l" ? "contained" : "outlined"}
-            onClick={() => {
-              setSize("l");
-            }}
-          >
-            L
-          </Button>
+
+          {sizes.map((d) => {
+            return (
+              <Button
+                variant={size === d ? "contained" : "outlined"}
+                onClick={() => {
+                  setSize(d);
+                }}
+                sx={{textTransform: "none"}}
+              >
+                {d}
+              </Button>
+            );
+          })}
         </Stack>
         <Button
           variant="contained"
