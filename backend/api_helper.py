@@ -1,10 +1,8 @@
 from importlib.machinery import DEBUG_BYTECODE_SUFFIXES
-from random import sample
-from webbrowser import get
 from flask import make_response, json
 import pandas as pd
 import qr_code
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from schema import Sample, get_database_uri
@@ -56,37 +54,41 @@ def create_response_from_scanning(message="", status_code=200, mimetype='applica
 #    - Bool: Returns True/False on whether our insertion was a duplicate or unique
 ############################################################
 def insert_new_sample(qr_code_key,sample_obj):
-    sample_name = str(sample_obj['sample_name'])
-    test_round = int(sample_obj['test_round'])
-    sample_consistency = float(sample_obj['sample_consistency'])
+    experiment_id = str(sample_obj['experiment_id'])
+    storage_condition = str(sample_obj['storage_condition'])
     analyst = str(sample_obj['analyst'])
     expiration_date = sample_obj['expiration_date']
     date_entered = sample_obj['date_entered']
-    date_modified = date_entered
-
+    contents = sample_obj['contents']
+    date_modified = sample_obj.get('date_modified',get_strf_utc_date())
     #Checks if this qr_code_key created already exists in our DB. Returns True if exists
 
     exists = check_if_key_exists(qr_code_key)
     #Updates existing sample if qr_code exists in our DB
     if exists:
             session.query(Sample).filter(Sample.qr_code_key == qr_code_key).\
-                    update({Sample.sample_name: sample_name,
-                            Sample.test_round: test_round,
-                            Sample.sample_consistency: sample_consistency,
+                    update({Sample.experiment_id: experiment_id,
+                            Sample.storage_condition: storage_condition,
+                            Sample.contents: contents,
                             Sample.analyst: analyst,
-                            Sample.date_modified: date_modified}, synchronize_session = False)
+                            Sample.date_entered: date_entered,
+                            Sample.date_modified: date_modified,
+                            Sample.expiration_date: expiration_date
+                            }
+                            , synchronize_session = False)
             session.commit()
             return False
     #If sample inserting to DB is unique
     else:
         new_sample = Sample(qr_code_key = qr_code_key,
-                            sample_name = sample_name,
-                            test_round = test_round,
-                            sample_consistency = sample_consistency,
+                            experiment_id = experiment_id,
+                            storage_condition = storage_condition,
+                            contents = contents,
                             analyst = analyst,
                             date_entered = date_entered,
-                            date_modified = date_modified,
-                            expiration_date = expiration_date)
+                            date_modified = date_entered,
+                            expiration_date = expiration_date
+                            )
         session.add(new_sample)
         session.commit()
 
@@ -120,10 +122,10 @@ def retrieve_sample_information_with_key(qr_code_key):
         
                 return_dic = {
                         'qr_code_key': content.qr_code_key,
-                        'sample_name': content.sample_name,
-                        'batch_id': content.test_round,
-                        'protein_concentration': content.sample_consistency,
+                        'experiment_id': content.experiment_id,
+                        'storage_condition': content.storage_condition,
                         'analyst': content.analyst,
+                        'contents': content.contents,
                         'date_entered': content.date_entered,
                         'date_modified': content.date_modified,
                         'expiration_date': content.expiration_date
@@ -149,6 +151,20 @@ def check_if_key_exists(qr_code_key):
         res = session.query(Sample.qr_code_key).filter_by(qr_code_key=qr_code_key).first()
         return True if res else False
 
+############################################################
+# Function_name: get_strf_utc_time
+#
+# Function_logic:
+#Creates a formatted string of the current utc time
+#
+# Arguments: 
+#
+# Return:
+#    - Return current UTC time
+############################################################
+def get_strf_utc_date():
+        current_utc = date.today()
+        return current_utc
 
 ############################################################
 # Function_name: parse_csv_to_db
@@ -169,21 +185,21 @@ def check_if_key_exists(qr_code_key):
 def parse_csv_to_db(file_path,info):
         try:
                 df = pd.read_csv(file_path)
-                current_utc = datetime.utcnow()
+                current_date = get_strf_utc_date()
                 for index,row in df.iterrows():
 
                         #Convert dataframe rows into a JSON obj (dictionary)
                         dic = {
-                                'sample_name': row['sample_name'],
-                                'batch_id': row['batch_id'],
-                                'protein_concentration': row['protein_concentration'],
+                                'experiment_id': row['experiment_id'],
+                                'storage_condition': row['storage_condition'],
                                 'analyst': row['analyst'],
+                                'contents': row['contents'],
                                 'date_entered': row['date_entered'],
-                                'date_modified': row['date_modified'],
-                                'expiration_date': row['expiration_date']
+                                'expiration_date': row['expiration_date'],
+                                'date_modified': current_date
                         }
 
-                        qr_code_key = qr_code.create_qr_code(dic, current_utc)
+                        qr_code_key = qr_code.create_qr_code(dic)
                         #If we are inserting a new_sample, we update new_sample_insert count
                         if insert_new_sample(qr_code_key, dic):
                                 info[0] += 1

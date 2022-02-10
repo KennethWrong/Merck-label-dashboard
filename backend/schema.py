@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine  
-from sqlalchemy import Column, String, DateTime, Integer, Float
+from sqlalchemy import Column, String, Date, Integer, Float
 from sqlalchemy.ext.declarative import declarative_base
 from dotenv import load_dotenv
 from  sqlalchemy.orm import sessionmaker
@@ -21,13 +21,13 @@ def get_database_uri():
 class Sample(base):  
     __tablename__ = 'samples'
     qr_code_key = Column(String, primary_key=True)
-    sample_name = Column(String)
-    test_round = Column(Integer)
-    sample_consistency = Column(Float)
+    experiment_id = Column(String)
+    storage_condition = Column(String)
     analyst = Column(String)
-    date_entered = Column(DateTime)
-    date_modified = Column(DateTime)
-    expiration_date = Column(DateTime)
+    contents = Column(String)
+    date_entered = Column(Date)
+    date_modified = Column(Date)
+    expiration_date = Column(Date)
 
 #Initializing the DB
 Session = sessionmaker(db) 

@@ -42,7 +42,7 @@ def generate_hash_key(row, features_selected):
 def create_qr_code(obj):
         
         #Modified hash key (need to improve with order-carefree)
-        features_selected = ['sample_name','analyst','test_round']
+        features_selected = ['analyst','experiment_id']
         unique_hash = generate_hash_key(obj, features_selected) # a string
         
         #Creating an instance of qrcode

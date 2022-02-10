@@ -1,14 +1,12 @@
-from flask import Flask,send_from_directory, request, send_file
+from flask import Flask, request, send_file
 import api_helper
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import qr_code
-import datetime
 import os
-from PIL import Image
-from io import BytesIO, StringIO
 import base64
 import re
+import uuid
 
 app = Flask(__name__, static_url_path='')
 CORS(app)
@@ -19,6 +17,7 @@ def get_vile_info_from_qr_code():
     content = request.json
     qr_code_key = content['qr_code_key']
     info,status = api_helper.retrieve_sample_information_with_key(qr_code_key)
+    print(info)
     response = api_helper.create_response_from_scanning(info, status_code=status)
     return response
 
@@ -26,9 +25,9 @@ def get_vile_info_from_qr_code():
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    current_utc = datetime.datetime.utcnow()
-    content['date_entered'] = current_utc.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    content['expiration_date'] = current_utc + datetime.timedelta(days=14)
+    content['date_entered'] = api_helper.get_strf_utc_date()
+    qr_code_size = content['size']
+    #With the qr_code_size we can call create qr_code small, medium large
     qr = qr_code.create_qr_code(content)
 
     #insert sample and information into qr_code
@@ -48,7 +47,6 @@ def dump_csv():
     file = request.files['csv']
     filename = secure_filename(file.filename)
     #Get path of the csv file to place .csv file into the folder
-    print(os.getcwd())
     dir_path = os.path.join(os.getcwd(),'csv')
     full_path = os.path.join(dir_path,f"{filename}")
     #Save the file
@@ -61,7 +59,7 @@ def dump_csv():
 @app.route('/upload/label_image', methods=['POST'])
 def upload_label_image():
     image_data = re.sub('^data:image/.+;base64,', '', request.form['file'])
-    image_title = datetime.datetime.utcnow().strftime("%m-%d-%Y_%H:%M:%S")
+    image_title = api_helper.get_strf_utc_date().strftime("%m-%d-%Y") +"-"+ str(uuid.uuid4())[3:8]
 
     with open(f'/server/images/{image_title}.jpg','wb') as fh:
         fh.write(base64.b64decode(image_data))
@@ -70,4 +68,3 @@ def upload_label_image():
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
-    # app.run(debug=True, port=5000)
