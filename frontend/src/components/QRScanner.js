@@ -12,6 +12,8 @@ function QRScanner() {
   const [errorMessage, setErrorMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
 
+  
+
   const handleScan = (data) => {
     if (data) {
       console.log(data);
@@ -62,7 +64,7 @@ function QRScanner() {
       }
       sendInfoToFlask();
     }
-  }, [qrScan]);
+  }, [qrScan, total_scans]);
 
   return (
     <div
