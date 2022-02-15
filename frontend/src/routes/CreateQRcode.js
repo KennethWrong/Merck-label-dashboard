@@ -187,7 +187,7 @@ function CreateQRcode() {
         </Stack>
         <Button
           variant="contained"
-          color="success"
+          color="primary"
           size="large"
           onClick={sendQRCode}
         >
