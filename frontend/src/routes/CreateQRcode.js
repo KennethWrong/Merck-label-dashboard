@@ -60,13 +60,9 @@ function CreateQRcode() {
       let obj = {
         experiment_id: experimentId,
         analyst: analyst,
-<<<<<<< HEAD
-        expiration_date: expiry,
-=======
         expiration_date: dateToString(expiry),
         date_modified: dateToString(dateModified),
         date_entered: dateToString(dateEntered),
->>>>>>> cca805001df839873f4ecdfb890dc848f4f26d51
         contents: contents,
         storage_condition: storageCondition,
         size: size,
@@ -91,6 +87,33 @@ function CreateQRcode() {
       <Stack width={"45vw"} spacing={2}>
         <TextField
           required
+          label="Experiment ID"
+          value={experimentId}
+          onChange={handleChangeExperiment}
+          id="outline-required"
+          variant="filled"
+          margin="dense"
+        />
+        <TextField
+          required
+          id="outlined-required"
+          label="Storage Condition"
+          value={storageCondition}
+          onChange={handleChangeStorageCondition}
+          margin="dense"
+          variant="filled"
+        />
+        <TextField
+          required
+          id="outlined-required"
+          label="Contents"
+          value={contents}
+          onChange={handleChangeContents}
+          margin="dense"
+          variant="filled"
+        />
+        <TextField
+          required
           id="outlined-required"
           label="Analyst"
           value={analyst}
@@ -98,12 +121,13 @@ function CreateQRcode() {
           margin="dense"
           variant="filled"
         />
+        
 
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
-            label="Expiry"
-            value={expiry}
-            onChange={handleChangeExpiry}
+            label="Date Entered"
+            value={dateEntered}
+            onChange={handleChangeDateEntered}
             renderInput={(params) => (
               <TextField
                 id="outlined-required"
@@ -114,11 +138,10 @@ function CreateQRcode() {
               />
             )}
           />
-
           <DatePicker
-            label="Date Entered"
-            value={dateEntered}
-            onChange={handleChangeDateEntered}
+            label="Expiry"
+            value={expiry}
+            onChange={handleChangeExpiry}
             renderInput={(params) => (
               <TextField
                 id="outlined-required"
@@ -146,33 +169,6 @@ function CreateQRcode() {
           />
         </LocalizationProvider>
 
-        <TextField
-          required
-          id="outlined-required"
-          label="Contents"
-          value={contents}
-          onChange={handleChangeContents}
-          margin="dense"
-          variant="filled"
-        />
-        <TextField
-          required
-          label="Experiment ID"
-          value={experimentId}
-          onChange={handleChangeExperiment}
-          id="outline-required"
-          variant="filled"
-          margin="dense"
-        />
-        <TextField
-          required
-          id="outlined-required"
-          label="Storage Condition"
-          value={storageCondition}
-          onChange={handleChangeStorageCondition}
-          margin="dense"
-          variant="filled"
-        />
         <Stack spacing={2} direction={"row"}>
           {sizes.map((d, i) => {
             return (

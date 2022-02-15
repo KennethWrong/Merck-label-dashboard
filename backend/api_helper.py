@@ -164,8 +164,12 @@ def check_if_key_exists(qr_code_key):
 #    - Return current UTC time
 ############################################################
 def get_strf_utc_date(input=''):
+        print(input)
         if input:
-                current_utc = datetime.strptime(input,"%m-%d-%Y").date()
+                try:
+                        current_utc = datetime.strptime(input,"%m/%d/%Y").date()
+                except:
+                        print(input)
         else:
                 current_utc = date.today()
         return current_utc
