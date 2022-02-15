@@ -1,4 +1,5 @@
 from importlib.machinery import DEBUG_BYTECODE_SUFFIXES
+from random import sample
 from flask import make_response, json
 import pandas as pd
 import qr_code
@@ -57,12 +58,12 @@ def insert_new_sample(qr_code_key,sample_obj):
     experiment_id = str(sample_obj['experiment_id'])
     storage_condition = str(sample_obj['storage_condition'])
     analyst = str(sample_obj['analyst'])
-    expiration_date = sample_obj['expiration_date']
+    expiration_date = get_strf_utc_date(sample_obj['expiration_date'])
     date_entered = sample_obj['date_entered']
     contents = sample_obj['contents']
-    date_modified = sample_obj.get('date_modified',get_strf_utc_date())
-    #Checks if this qr_code_key created already exists in our DB. Returns True if exists
+    date_modified = get_strf_utc_date()
 
+    #Checks if this qr_code_key created already exists in our DB. Returns True if exists
     exists = check_if_key_exists(qr_code_key)
     #Updates existing sample if qr_code exists in our DB
     if exists:
@@ -162,8 +163,11 @@ def check_if_key_exists(qr_code_key):
 # Return:
 #    - Return current UTC time
 ############################################################
-def get_strf_utc_date():
-        current_utc = date.today()
+def get_strf_utc_date(input=''):
+        if input:
+                current_utc = datetime.strptime(input,"%m-%d-%Y").date()
+        else:
+                current_utc = date.today()
         return current_utc
 
 ############################################################

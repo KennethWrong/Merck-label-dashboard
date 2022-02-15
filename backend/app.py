@@ -17,7 +17,6 @@ def get_vile_info_from_qr_code():
     content = request.json
     qr_code_key = content['qr_code_key']
     info,status = api_helper.retrieve_sample_information_with_key(qr_code_key)
-    print(info)
     response = api_helper.create_response_from_scanning(info, status_code=status)
     return response
 
@@ -27,6 +26,7 @@ def create_qr_code():
     content = request.json
     content['date_entered'] = api_helper.get_strf_utc_date()
     qr_code_size = content['size']
+    print(qr_code_size)
     #With the qr_code_size we can call create qr_code small, medium large
     qr = qr_code.create_qr_code(content)
 

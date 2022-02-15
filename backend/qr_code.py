@@ -40,9 +40,12 @@ def generate_hash_key(row, features_selected):
 #    - qr_code_key : Returns generated hashed qr_code_key
 ############################################################
 def create_qr_code(obj):
-        
+        size = obj['size']
         #Modified hash key (need to improve with order-carefree)
         features_selected = ['analyst','experiment_id']
+        #Check if we got a null
+        if not obj['analyst'] or not obj['experiment_id']:
+                return None
         unique_hash = generate_hash_key(obj, features_selected) # a string
         
         #Creating an instance of qrcode
@@ -50,7 +53,16 @@ def create_qr_code(obj):
                 "qr_code_key": f"{unique_hash}",
                 "date_entered": f"{obj['date_entered']}",
         }
-        
+        #This will change according to the size
+        if size == '2ml':
+                pass #To be entered
+        elif size == '2.5ml':
+                pass #To be entered
+        elif size == '4ml':
+                pass #To be entered
+        elif size == '20ml':
+                pass #To be entered
+
         #Using the library to create the QR code
         qr = qrcode.QRCode(
                 version=1,

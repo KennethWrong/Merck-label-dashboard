@@ -41,7 +41,7 @@ function CreateQRcode() {
       let obj = {
         experiment_id: experimentId,
         analyst: analyst,
-        expiry: expiry,
+        expiration_date: expiry,
         contents: contents,
         storage_condition: storageCondition,
         size: size,
@@ -53,7 +53,6 @@ function CreateQRcode() {
       setExpiry("");
       setContents("");
       setStorageCondition("");
-      setSize("s");
       console.log(qr);
     } catch (e) {
       console.log(e);

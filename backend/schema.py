@@ -21,13 +21,13 @@ def get_database_uri():
 class Sample(base):  
     __tablename__ = 'samples'
     qr_code_key = Column(String, primary_key=True)
-    experiment_id = Column(String)
-    storage_condition = Column(String)
-    analyst = Column(String)
-    contents = Column(String)
-    date_entered = Column(Date)
-    date_modified = Column(Date)
-    expiration_date = Column(Date)
+    experiment_id = Column(String, nullable=False)
+    storage_condition = Column(String, nullable=False)
+    analyst = Column(String, nullable=False)
+    contents = Column(String, nullable=False)
+    date_entered = Column(Date, nullable=False)
+    date_modified = Column(Date, nullable=False)
+    expiration_date = Column(Date, nullable=False)
 
 #Initializing the DB
 Session = sessionmaker(db) 
