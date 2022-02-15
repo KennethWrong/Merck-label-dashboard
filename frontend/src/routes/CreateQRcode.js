@@ -2,27 +2,46 @@ import { useState } from "react";
 import { Stack, TextField } from "@mui/material";
 import { Button } from "@mui/material";
 import axios from "axios";
+import DatePicker from "@mui/lab/DatePicker";
 
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
 // analyst, expiry, contents, experimentId, storageCondition, size
 
-const sizes = ["2mL", "2.5mL", "4mL","20mL"];
+const sizes = ["2mL", "2.5mL", "4mL", "20mL"];
 
 function CreateQRcode() {
   const [analyst, setAnalyst] = useState("");
-  //TODO: do we need this to be a date picker or a text field is fine?
-  const [expiry, setExpiry] = useState("");
+  //TODO: add the date picker and the 2 other date fields
+  const [expiry, setExpiry] = useState(new Date());
   const [contents, setContents] = useState("");
   const [experimentId, setExperimentId] = useState("");
   const [storageCondition, setStorageCondition] = useState("");
   const [size, setSize] = useState(sizes[0]);
   const [qr, setQR] = useState("");
+  const [dateEntered, setDateEntered] = useState(new Date());
+  const [dateModified, setDateModified] = useState(new Date());
+  // const [selectedDate, handleDateChange] = useState(new Date());
+
+  const dateToString = (dateObj) =>
+    `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(
+      dateObj.getDate()
+    ).padStart(2, "0")}/${dateObj.getFullYear()}`;
 
   const handleChangeAnalyst = (e) => {
     setAnalyst(e.target.value);
   };
 
+  const handleChangeDateEntered = (e) => {
+    setDateEntered(e);
+  };
+
+  const handleChangeDateModified = (e) => {
+    setDateModified(e);
+  };
+
   const handleChangeExpiry = (e) => {
-    setExpiry(e.target.value);
+    setExpiry(e);
   };
 
   const handleChangeContents = (e) => {
@@ -41,7 +60,13 @@ function CreateQRcode() {
       let obj = {
         experiment_id: experimentId,
         analyst: analyst,
+<<<<<<< HEAD
         expiration_date: expiry,
+=======
+        expiration_date: dateToString(expiry),
+        date_modified: dateToString(dateModified),
+        date_entered: dateToString(dateEntered),
+>>>>>>> cca805001df839873f4ecdfb890dc848f4f26d51
         contents: contents,
         storage_condition: storageCondition,
         size: size,
@@ -50,7 +75,9 @@ function CreateQRcode() {
       setQR(res.data);
       setExperimentId("");
       setAnalyst("");
-      setExpiry("");
+      setExpiry(new Date());
+      setDateEntered(new Date());
+      setDateModified(new Date());
       setContents("");
       setStorageCondition("");
       console.log(qr);
@@ -72,15 +99,52 @@ function CreateQRcode() {
           variant="filled"
         />
 
-        <TextField
-          required
-          id="outlined-required"
-          label="Expiry"
-          value={expiry}
-          onChange={handleChangeExpiry}
-          margin="dense"
-          variant="filled"
-        />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DatePicker
+            label="Expiry"
+            value={expiry}
+            onChange={handleChangeExpiry}
+            renderInput={(params) => (
+              <TextField
+                id="outlined-required"
+                margin="dense"
+                variant="filled"
+                required
+                {...params}
+              />
+            )}
+          />
+
+          <DatePicker
+            label="Date Entered"
+            value={dateEntered}
+            onChange={handleChangeDateEntered}
+            renderInput={(params) => (
+              <TextField
+                id="outlined-required"
+                margin="dense"
+                variant="filled"
+                required
+                {...params}
+              />
+            )}
+          />
+
+          <DatePicker
+            label="Date Modified"
+            value={dateModified}
+            onChange={handleChangeDateModified}
+            renderInput={(params) => (
+              <TextField
+                id="outlined-required"
+                margin="dense"
+                variant="filled"
+                required
+                {...params}
+              />
+            )}
+          />
+        </LocalizationProvider>
 
         <TextField
           required
@@ -110,15 +174,15 @@ function CreateQRcode() {
           variant="filled"
         />
         <Stack spacing={2} direction={"row"}>
-
-          {sizes.map((d) => {
+          {sizes.map((d, i) => {
             return (
               <Button
                 variant={size === d ? "contained" : "outlined"}
                 onClick={() => {
                   setSize(d);
                 }}
-                sx={{textTransform: "none"}}
+                sx={{ textTransform: "none" }}
+                key={i}
               >
                 {d}
               </Button>
