@@ -10,9 +10,23 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 
 const sizes = ["2mL", "2.5mL", "4mL", "20mL"];
 
+const printImg = () => {
+  const url =
+    "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png";
+
+  const win = window.open("");
+  win.document.write("<html><head>");
+  win.document.write("</head><body>");
+  win.document.write('<img id="print-image-element" src="' + url + '"/>');
+  win.document.write(
+    '<script>var img = document.getElementById("print-image-element"); img.addEventListener("load",function(){ window.focus(); window.print(); window.document.close(); window.close(); }); </script>'
+  );
+  win.document.write("</body></html>");
+  win.window.print();
+};
+
 function CreateQRcode() {
   const [analyst, setAnalyst] = useState("");
-  //TODO: add the date picker and the 2 other date fields
   const [expiry, setExpiry] = useState(new Date());
   const [contents, setContents] = useState("");
   const [experimentId, setExperimentId] = useState("");
@@ -121,7 +135,6 @@ function CreateQRcode() {
           margin="dense"
           variant="filled"
         />
-        
 
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DatePicker
@@ -189,7 +202,10 @@ function CreateQRcode() {
           variant="contained"
           color="primary"
           size="large"
-          onClick={sendQRCode}
+          onClick={() => {
+            sendQRCode();
+            printImg();
+          }}
         >
           Create
         </Button>
