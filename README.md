@@ -11,7 +11,7 @@
 
 
 
-### TROUBLE-SHOOTING
+## TROUBLE-SHOOTING
 #### 1. (MAC) If port 5000 is used.
 If you are using a mac and when you try to run the docker-compose command and it says that port 5000 is used; chances are that airplay is using port 5000. 
 
