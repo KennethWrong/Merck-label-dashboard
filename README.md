@@ -5,10 +5,13 @@
 
 ### DOCKER METHOD
 #### WARNING: BEFORE DOING THIS MAKE SURE YOU HAVE DOCKER DESKTOP and Docker-compose CLI INSTALLED ON LOCAL DEVICE
-1. Simply run this command in parent directory `docker-compose up && docker-compose rm -fsv`
+1. `cd frontend` to CD into frontend directory and run `npm install` or `npm i`.
+2. `cd ../` to return back to main project directory.
+3. Simply run this command in parent directory `docker-compose up && docker-compose rm -fsv`
 
 
-### Trouble-shooting
+
+### TROUBLE-SHOOTING
 #### 1. (MAC) If port 5000 is used.
 If you are using a mac and when you try to run the docker-compose command and it says that port 5000 is used; chances are that airplay is using port 5000. 
 
