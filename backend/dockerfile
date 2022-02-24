@@ -14,6 +14,8 @@ WORKDIR /server
 RUN apt-get update
 
 RUN pip install --no-cache-dir -r requirements.txt
+ENV FLASK_DEBUG=1
+ENV FLASK_ENV=development
 
 EXPOSE 5000
 

@@ -9,6 +9,7 @@ import re
 import uuid
 
 app = Flask(__name__, static_url_path='')
+app.config['DEBUG']=True
 CORS(app)
 
 #End point for qr_code scanning
@@ -24,9 +25,7 @@ def get_vile_info_from_qr_code():
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    content['date_entered'] = api_helper.get_strf_utc_date()
     qr_code_size = content['size']
-    print(qr_code_size)
     #With the qr_code_size we can call create qr_code small, medium large
     qr = qr_code.create_qr_code(content)
 
@@ -53,6 +52,7 @@ def dump_csv():
     file.save(full_path)
     values = [0,0]
     res = api_helper.parse_csv_to_db(full_path,values)
+    print(values,flush=True)
     return api_helper.create_response(status_code=res, message=f"Total Entries:{values[0]+values[1]} New:{values[0]} Updated:{values[1]}")
 
 #/upload/label_image

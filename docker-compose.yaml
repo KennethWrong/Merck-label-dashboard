@@ -4,28 +4,23 @@ services:
   flask-backend:
     container_name: flask-backend
     build: ./backend
-    environment:
-      POSTGRES_USERNAME: admin
-      POSTGRES_PASSWORD: password
-      POSTGRES_HOST: db
-      POSTGRES_DATABASE: test
     ports:
       - 5000:5000
     volumes:
       - ./backend:/server
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
     restart: always
     
-  db:
-    container_name: db
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: test
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+  # db:
+  #   container_name: db
+  #   image: postgres:latest
+  #   environment:
+  #     POSTGRES_DB: test
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - ./postgres-data:/var/lib/postgresql/data
   
   react:
     container_name: react

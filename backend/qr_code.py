@@ -1,8 +1,17 @@
 import qrcode
 import hashlib
 import os
-
 from PIL import Image, ImageDraw,ImageFont
+import functools
+import sys
+from db_helper import get_strf_utc_date
+
+def join_directories(*paths):
+        curr_dir = os.getcwd()
+        paths = [curr_dir] + list(paths)
+        destination_dir = functools.reduce(os.path.join,paths)
+        return destination_dir+'/'
+
 
 ############################################################
 # Function_name: generate_hash_key
@@ -46,10 +55,9 @@ def generate_hash_key(row, features_selected):
 
 def large_format(qr_img,obj):
     # place qr code image on background
-    path = "backend/files_for_label/"
-
+    path = join_directories('files_for_label')
     # get a background white image for label
-    img = Image.open(path + "white image.jpeg")
+    img = Image.open(path + "white_image.jpeg")
     # resize it to a label size suitable for QR printer
     img = img.resize((696, 250))
     # resize the qr image to put on the background
@@ -58,20 +66,20 @@ def large_format(qr_img,obj):
 
     # Add text information
     draw = ImageDraw.Draw(img)
-    # font
-    #path1 = "/Users/zhangyuke/Downloads/"
-    fnt1 = ImageFont.truetype(path + "Arial_Unicode.ttf", 30)
-    fnt2 = ImageFont.truetype(path + "Arial_Unicode.ttf", 22)
-    fnt3 = ImageFont.truetype(path + "Arial_Unicode.ttf", 25)
+    fnt1 = ImageFont.load_default()
+    fnt2 = ImageFont.load_default()
+    fnt3 = ImageFont.load_default()
 
-    temperature, PH = obj["storage_condition"].split(", ")
-    concentration, contents = obj["contents"].split(", ")
+#     temperature, PH = obj["storage_condition"].split(", ")
+#     concentration, contents = obj["contents"].split(", ")
     left_align = 40
-    msg1 = temperature + ", " + concentration + ", " + PH
-    msg2 = "Prep " + obj["date_entered"] + " " * 4 + "Expiry " + obj["expiration_date"]
+#     msg1 = temperature + ", " + concentration + ", " + PH
+    msg1 = obj["storage_condition"]
+#     msg2 = "Prep " + str(obj["date_entered"]) + " " * 4 + "Expiry " + str(obj["expiration_date"])
+    msg2 = obj["contents"]
     msg3 = "Prep By: " + obj["analyst"]
     draw.text((left_align, 55), obj["experiment_id"], font=fnt1, stroke_width=1, anchor="ls", fill=0)
-    draw.text((left_align, 90), contents, font=fnt1, anchor="ls", fill=0)
+    draw.text((left_align, 90), 'This is a placeholder for now', font=fnt1, anchor="ls", fill=0)
     draw.text((left_align, 130), msg1, font=fnt2, anchor="ls", fill=0)
     draw.text((left_align, 190), msg2, font=fnt3, anchor="ls", fill=0)
     draw.text((left_align, 220), msg3, font=fnt3, anchor="ls", fill=0)
@@ -103,42 +111,49 @@ def large_format(qr_img,obj):
 def create_qr_code(obj):
         size = obj['size']
         #Modified hash key (need to improve with order-carefree)
-        features_selected = ['experiment_id', 'storage_condition', 'analyst','contents','date_entered','expiration_date']
+        features_selected = ['experiment_id', 'storage_condition', 'analyst','contents']
         #Check if we got a null
+
+        #Check if date_entered is already provided to us
+        if 'date_entered' not in obj:
+                obj['date_entered'] = get_strf_utc_date()
+
+        #Check if field is empty
         if not obj['analyst'] or not obj['experiment_id']:
                 return None
+        
         unique_hash = generate_hash_key(obj, features_selected) # a string
         
         #Creating an instance of qrcode
         obj_qrkey = {
                 "qr_code_key": f"{unique_hash}",
-                "date_entered": f"{obj['date_entered']}", ## not date_modified?
+                "date_entered": f"{obj['date_entered']}",
         }
         #Using the library to create the QR code
         qr = qrcode.QRCode(
                 version=1,
                 box_size=10,
                 border=5)
-        qr.add_data(obj)
+        qr.add_data(obj_qrkey)
         qr.make(fit=True)
         qr_img = qr.make_image(fill='black', back_color='white')
-        qr_code_dir = os.path.join(os.getcwd(),'qr_codes')
-        
-        path = "backend/files_for_label/"
-        #This will change according to the size
-        if size == '2ml':
-                pass #To be entered
-        elif size == '2.5ml':
-                pass #To be entered
-        elif size == '4ml':
-                img = large_format(qr_img, obj)
-        elif size == '20ml':
-                img = large_format(qr_img, obj)
 
+        qr_code_dir = join_directories('qr_codes')
+        image_dir = join_directories('files_for_label')
+        img = qr_img
+        #This will change according to the size
+        if size == '2mL':
+                pass #To be entered
+        elif size == '2.5mL':
+                pass #To be entered
+        elif size == '4mL':
+                img = large_format(qr_img, obj)
+        elif size == '20mL':
+                img = large_format(qr_img, obj)
 
         #Temporarily saves QR code into /qr_codes folder
         #Will be improved as we do not need to store it as we will send the QR code to the printer
         img.save(f'{qr_code_dir}/{unique_hash}.png')
-        img.save(path + 'label.png') ## need to modify the filename
+        img.save(os.path.join(image_dir,'label.png')) ## need to modify the filename
         return unique_hash
 
