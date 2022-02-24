@@ -39,7 +39,53 @@ def generate_hash_key(row, features_selected):
     return hash_key[:10]
 
 ############################################################
-# Function_name: generate_hash_key
+# Function_name: small_format
+#
+# Function_logic:
+# accept the qr code image and info from obj to generate a label 
+#       suitable for 2ml and 2.5 ml vile
+#
+# Arguments: 
+#    - qr_img: qr code generated in create_qr_code function
+#    - obj: info contains columns in feature_selected
+    
+# Return:
+#    - img: a designed label image with text and qr code
+############################################################
+def small_format(qr_img, obj):
+    path = "backend/files_for_label/"
+
+    # font
+    fnt1 = ImageFont.truetype(path + "Arial_Unicode.ttf", 25)
+    fnt2 = ImageFont.truetype(path + "Arial_Unicode.ttf", 25)
+
+    # get a background white image for label
+    img = Image.open(path + "white image.jpeg")
+    # resize it to a label size suitable for QR printer
+    img = img.resize((250, 250))
+    # add text to the background
+    draw = ImageDraw.Draw(img)
+    msg1 = "Prep By: " + obj["analyst"]
+    # rotated text at the right
+    draw.text((125, 245), msg1, font=fnt2, anchor="ms", fill=0)
+    img = img.rotate(90)
+    draw = ImageDraw.Draw(img)
+    # text at the bottom
+    draw.text((125, 245), obj["experiment_id"], font=fnt1, anchor="ms", fill=0)
+    # text at the top
+    draw.text((125, 25), obj["date_entered"], font=fnt1, anchor="ms", fill=0)
+
+    # resize the qr image to put on the background
+    qr_img = qr_img.resize((230, 230))
+    # crop the white margin of qr code
+    qr_img = qr_img.crop((15, 15, 215, 215))
+    # add qr code image to the background
+    img.paste(qr_img, (25, 25)) # left upper corner coordinates
+
+    return img
+
+############################################################
+# Function_name: large_format
 #
 # Function_logic:
 # accept the qr code image and info from obj to generate a label 
