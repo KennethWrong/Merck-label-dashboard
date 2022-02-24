@@ -39,9 +39,9 @@ def get_database_uri():
 
 ####UNCOMMENT THIS BLOCK IF RUNNING DB FOR THE FIRST TIME####
 #
-#Initializing the DB
-# Session = sessionmaker(db) 
-# session = Session()
-# base.metadata.create_all(db)
+# Initializing the DB
+Session = sessionmaker(db) 
+session = Session()
+base.metadata.create_all(db)
 #
 ############################################################

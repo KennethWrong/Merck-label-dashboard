@@ -27,7 +27,7 @@ def insert_new_sample(qr_code_key, sample_obj):
     storage_condition = str(sample_obj['storage_condition'])
     analyst = str(sample_obj['analyst'])
     expiration_date = get_strf_utc_date(sample_obj['expiration_date'])
-    date_entered = sample_obj['date_entered']
+    date_entered = get_strf_utc_date(sample_obj['date_entered'])
     contents = sample_obj['contents']
     date_modified = get_strf_utc_date()
 
@@ -70,13 +70,15 @@ def update_sample_by_qr_code_key(qr_code_key, sample_obj):
     storage_condition = str(sample_obj['storage_condition'])
     analyst = str(sample_obj['analyst'])
     expiration_date = get_strf_utc_date(sample_obj['expiration_date'])
-    date_entered = sample_obj['date_entered']
+    date_entered = get_strf_utc_date(sample_obj['date_entered'])
     contents = sample_obj['contents']
     date_modified = get_strf_utc_date()
 
     try:
         session.query(Sample).filter(Sample.qr_code_key == qr_code_key).\
-                    update({Sample.experiment_id: experiment_id,
+                    update({
+                            Sample.qr_code_key: qr_code_key,
+                            Sample.experiment_id: experiment_id,
                             Sample.storage_condition: storage_condition,
                             Sample.contents: contents,
                             Sample.analyst: analyst,
@@ -131,10 +133,11 @@ def retrieve_sample_information_with_key(qr_code_key):
 def check_if_key_exists(qr_code_key):
     try:
         res = session.query(Sample.qr_code_key).filter_by(qr_code_key=qr_code_key).first()
+        return True
     except Exception as e:
         print(e)
         print('Something went wrong when checking if entry exists. Check the format of the QR_Code_key being passed.',flush=True)
-    return True if res else False
+    return False
 
 
 

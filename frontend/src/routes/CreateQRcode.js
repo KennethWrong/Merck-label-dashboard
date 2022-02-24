@@ -70,30 +70,31 @@ function CreateQRcode() {
   };
 
   const sendQRCode = async () => {
-    try {
-      let obj = {
-        experiment_id: experimentId,
-        analyst: analyst,
-        expiration_date: dateToString(expiry),
-        date_modified: dateToString(dateModified),
-        date_entered: dateToString(dateEntered),
-        contents: contents,
-        storage_condition: storageCondition,
-        size: size,
-      };
-      let res = await axios.post("http://localhost:5000/create/qr_code", obj);
-      setQR(res.data);
-      setExperimentId("");
-      setAnalyst("");
-      setExpiry(new Date());
-      setDateEntered(new Date());
-      setDateModified(new Date());
-      setContents("");
-      setStorageCondition("");
-      console.log(qr);
-    } catch (e) {
-      console.log(e);
-    }
+      try {
+        let obj = {
+          experiment_id: experimentId,
+          analyst: analyst,
+          expiration_date: dateToString(expiry),
+          date_modified: dateToString(dateModified),
+          date_entered: dateToString(dateEntered),
+          contents: contents,
+          storage_condition: storageCondition,
+          size: size,
+        };
+        let res = await axios.post("http://localhost:5000/create/qr_code", obj);
+        setQR(res.data);
+        setExperimentId("");
+        setAnalyst("");
+        setExpiry(new Date());
+        setDateEntered(new Date());
+        setDateModified(new Date());
+        setContents("");
+        setStorageCondition("");
+        console.log(qr);
+      } 
+      catch (e) {
+        console.log(e);
+      }
   };
 
   return (
@@ -202,6 +203,8 @@ function CreateQRcode() {
           variant="contained"
           color="primary"
           size="large"
+          disabled = {experimentId && analyst && expiry && dateModified && dateEntered && contents && storageCondition? 
+            false: true}
           onClick={() => {
             sendQRCode();
             printImg();
@@ -211,13 +214,13 @@ function CreateQRcode() {
         </Button>
       </Stack>
       <Stack alignItems={"center"} width={"45vw"} justifyContent={"center"}>
-        <h1>{qr}</h1>
+        {/* <h1>{qr}</h1> */}
         {qr ? (
           <div>
             <h1>QR code has Key {qr}</h1>
             <img
               alt="Generated QR Code"
-              src={`http://localhost:5000/assets/qr_code/${qr}`}
+              src={`http://localhost:5000/assets/qr_code/${qr}?${experimentId}`}
             />
           </div>
         ) : (

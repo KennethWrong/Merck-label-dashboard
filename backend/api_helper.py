@@ -58,7 +58,7 @@ def insert_new_sample(qr_code_key,sample_obj):
     exists = db_helper.check_if_key_exists(qr_code_key)
     #Updates existing sample if qr_code exists in our DB
     if exists:
-            db_helper.update_sample_by_qr_code_key(qr_code, sample_obj)
+            db_helper.update_sample_by_qr_code_key(qr_code_key, sample_obj)
             return False
     #If sample inserting to DB is unique
     else:
@@ -137,7 +137,6 @@ def parse_csv_to_db(file_path,info):
                                 'date_entered': row['date_entered'],
                                 'expiration_date': row['expiration_date'],
                                 'date_modified': current_date,
-                                'size': '2mL'
                         }
 
                         qr_code_key = qr_code.create_qr_code(dic)

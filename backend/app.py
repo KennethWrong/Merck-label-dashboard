@@ -7,6 +7,7 @@ import os
 import base64
 import re
 import uuid
+import db_helper
 
 app = Flask(__name__, static_url_path='')
 app.config['DEBUG']=True
@@ -25,7 +26,6 @@ def get_vile_info_from_qr_code():
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    qr_code_size = content['size']
     #With the qr_code_size we can call create qr_code small, medium large
     qr = qr_code.create_qr_code(content)
 
@@ -59,7 +59,7 @@ def dump_csv():
 @app.route('/upload/label_image', methods=['POST'])
 def upload_label_image():
     image_data = re.sub('^data:image/.+;base64,', '', request.form['file'])
-    image_title = api_helper.get_strf_utc_date().strftime("%m-%d-%Y") +"-"+ str(uuid.uuid4())[3:8]
+    image_title = db_helper.get_strf_utc_date().strftime("%m-%d-%Y") +"-"+ str(uuid.uuid4())[3:8]
 
     with open(f'/server/images/{image_title}.jpg','wb') as fh:
         fh.write(base64.b64decode(image_data))
