@@ -1,6 +1,6 @@
 # Merck-label-dashboard
 
-## YOU WILL NEED THE .ENV FILE TO RUN THE FLASK SERVER
+### YOU WILL NEED THE .ENV FILE TO RUN THE FLASK SERVER
 
 ## How to run the project
 
