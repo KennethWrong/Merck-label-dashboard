@@ -1,5 +1,6 @@
 # Merck-label-dashboard
 
+## YOU WILL NEED THE .ENV FILE TO RUN THE FLASK SERVER
 
 ## How to run the project
 
@@ -8,6 +9,7 @@
 1. `cd frontend` to CD into frontend directory and run `npm install` or `npm i`.
 2. `cd ../` to return back to main project directory.
 3. Simply run this command in parent directory `docker-compose up && docker-compose rm -fsv`
+4. Message me on slack for the .env file. 
 
 
 
