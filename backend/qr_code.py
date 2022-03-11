@@ -274,8 +274,8 @@ def large_format(qr_img, obj, font_filename, background_filename):
 #    - obj = { 
 #        'experiment_id':"5010613001301" ,
 #        'storage_condition': "50C, pH 6.8",
-#        'analyst': "AKPM",
 #        'contents': "10 mM, potassium phosphate buffer",
+#        'analyst': "AKPM",
 #        'date_entered': "10/24/2022",
 #        'expiration_date': "01/28/2022",
 #        'date_modified': "10/24/2022"
@@ -316,26 +316,26 @@ def create_qr_code(obj):
         image_dir = join_directories('files_for_label')
         img = qr_img
         
-        path = "/server/backend/files_for_label/"
-        font_filename = path + "reg.ttf"
-        background_filename = path + "white_image.jpeg"
+        path = image_dir
+        font_filename = os.path.join(image_dir,"reg.ttf")
+        background_filename = os.path.join(image_dir,"white_image.jpeg")
         #This will change according to the size
         if size == '2mL':
-                img = small_format(qr_img, obj, font_filename, background_filename)
-                img.save(path + 'small_label.png')  # for testing
+            img = small_format(qr_img, obj, font_filename, background_filename)
         elif size == '2.5mL':
-                img = small_format(qr_img, obj, font_filename, background_filename)
-                img.save(path + 'small_label.png')  # for testing
+            img = small_format(qr_img, obj, font_filename, background_filename)
         elif size == '4mL':
-                img = large_format(qr_img, obj, font_filename, background_filename)
-                img.save(path + 'large_label.png')
-        elif size == '20mL':
-                img = large_format(qr_img, obj, font_filename, background_filename)
-                img.save(path + 'large_label.png')
+            img = large_format(qr_img, obj, font_filename, background_filename)
+        else: # 20mL
+            img = large_format(qr_img, obj, font_filename, background_filename)
+        
+            
 
         #Temporarily saves QR code into /qr_codes folder
         #Will be improved as we do not need to store it as we will send the QR code to the printer
-        img.save(f'{qr_code_dir}/{unique_hash}.png')
-        img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png')) ## need to modify the filename
+        qr_img.save(f'{qr_code_dir}/{unique_hash}.png')
+        #img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png')) ## need to modify the filename
+        img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png'))
+        
         return unique_hash
 

@@ -1,5 +1,0 @@
-POSTGRES_USERNAME=rfidadmin
-POSTGRES_PASSWORD=PUbball#1
-POSTGRES_HOST=rfid-db.tdm.geddes.rcac.purdue.edu
-POSTGRES_PORT=80
-POSTGRES_DATABASE:test
