@@ -11,8 +11,7 @@ pg_host = os.getenv('POSTGRES_HOST')
 pg_database = os.getenv('POSTGRES_DATABASE')
 pg_username = os.getenv('POSTGRES_USERNAME')
 pg_password = os.getenv('POSTGRES_PASSWORD')
-pg_port = ':'+os.getenv('POSTGRES_PORT')
-print(os.getenv('POSTGRES_DATABASE'), flush=True)
+pg_port = ':'+ os.getenv('POSTGRES_PORT')
 
 #Your username and password
 db_uri = f"postgresql://{pg_username}:{pg_password}@{pg_host}{pg_port}/{pg_database}"

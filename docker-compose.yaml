@@ -8,19 +8,8 @@ services:
       - 5000:5000
     volumes:
       - ./backend:/server
-    # depends_on:
-    #   - db
     restart: always
-    
-  # db:
-  #   container_name: db
-  #   image: postgres:latest
-  #   environment:
-  #     POSTGRES_DB: test
-  #     POSTGRES_USER: admin
-  #     POSTGRES_PASSWORD: password
-  #   volumes:
-  #     - ./postgres-data:/var/lib/postgresql/data
+
   
   react:
     container_name: react
