@@ -12,6 +12,12 @@ def join_directories(*paths):
         destination_dir = functools.reduce(os.path.join,paths)
         return destination_dir+'/'
 
+def anchor_adjustment(desired_location,string,draw): # find location for "la" given "ms"
+    text_width, text_height = draw.textsize(string, font=ImageFont.load_default())
+    left_location = (desired_location[0] - text_width / 2, desired_location[1] - text_height)
+    return left_location
+
+
 
 ############################################################
 # Function_name: generate_hash_key
@@ -57,41 +63,51 @@ def generate_hash_key(row, features_selected):
 #    - img: a designed label image with text and qr code
 ############################################################
 def small_format(qr_img, obj):
-    try:
-        path = join_directories('files_for_label')
-        # font
-        fnt1 = ImageFont.load_default()
-        fnt2 = ImageFont.load_default()
+    path1 = "/server/files_for_label/"
 
-        # get a background white image for label
-        img = Image.open(path + "white_image.jpeg")
-        # resize it to a label size suitable for QR printer
-        img = img.resize((250, 250))
-        # add text to the background
-        draw = ImageDraw.Draw(img)
-        msg1 = "Prep By: " + obj["analyst"]
-        # rotated text at the right
-        draw.text((125, 245), msg1, font=fnt2, anchor="ms", fill=0)
-        img = img.rotate(90)
-        draw = ImageDraw.Draw(img)
-        # text at the bottom
-        draw.text((125, 245), obj["experiment_id"], font=fnt1, anchor="ms", fill=0)
-        # text at the top
-        draw.text((125, 75), obj["date_entered"], font=fnt1, anchor="ms", fill=0)
+    # font
+    path2 = "/server/files_for_label/"
+    fnt1 = ImageFont.truetype(path2 + "reg.ttf", 25)
+    fnt2 = ImageFont.truetype(path2 + "reg.ttf", 25)
+#     fnt1 = ImageFont.load_default() # anchor = "la"
+#     fnt2 = ImageFont.load_default()
+    temperature, PH = obj["storage_condition"].split(", ")
+    concentration, contents = obj["contents"].split(", ")
 
-        # resize the qr image to put on the background
-        qr_img = qr_img.resize((230, 230))
-        # crop the white margin of qr code
-        qr_img = qr_img.crop((15, 15, 215, 215))
-        # add qr code image to the background
-        img.paste(qr_img, (25, 25)) # left upper corner coordinates
+    # get a background white image for label
+    img = Image.open(path1 + "white_image.jpeg")
+    # resize it to a label size suitable for QR printer
+    img = img.resize((250, 250))
+    # add text to the background
+    draw = ImageDraw.Draw(img)
+    msg1 = "Prep By: " + obj["analyst"]
+    msg2 = "Stored at: " + temperature
 
-        return img
-    except Exception as e:
-            print('Something went wrong when trying to create a small QR_CODE')
-            print(e)
+    # rotated text at the left
+    left_location = anchor_adjustment((125, 25), msg1, draw)
+    draw.text(left_location, msg2, font=fnt1, fill=0)
+    # rotated text at the right
+    left_location = anchor_adjustment((125, 245), msg1, draw)
+    draw.text(left_location, msg1, font=fnt2, fill=0)
 
-    return None
+    img = img.rotate(90)
+    draw = ImageDraw.Draw(img)
+    #test_fit(draw, font_size, string, font_file, img_bound)
+    # text at the bottom
+    left_location = anchor_adjustment((125, 245), obj["experiment_id"], draw)
+    draw.text(left_location, obj["experiment_id"], font=fnt1, fill=0)
+    # text at the top
+    left_location = anchor_adjustment((125, 25), obj["date_entered"], draw)
+    draw.text(left_location, obj["date_entered"], font=fnt1, fill=0)
+    
+    # resize the qr image to put on the background
+    qr_img = qr_img.resize((230, 230))
+    # crop the white margin of qr code
+    qr_img = qr_img.crop((15, 15, 215, 215))
+    # add qr code image to the background
+    img.paste(qr_img, (25, 25)) # left upper corner coordinates
+
+    return img
 
 ############################################################
 # Function_name: large_format
