@@ -220,7 +220,7 @@ function CreateQRcode() {
             <h1>QR code has Key {qr}</h1>
             <img
               alt="Generated QR Code"
-              src={`http://localhost:5000/assets/qr_code/${qr}?${experimentId}`}
+              src={`http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`}
             />
           </div>
         ) : (

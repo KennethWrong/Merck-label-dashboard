@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw,ImageFont
 import functools
 import sys
 from db_helper import get_strf_utc_date
+import zlib
 
 def join_directories(*paths):
         curr_dir = os.getcwd()
@@ -41,12 +42,62 @@ def generate_hash_key(row, features_selected):
         # concatenate values from given features to generate hash_key
         for feature in features_selected:
                 hash_key += str(row[feature]) + ""
-        hash_key = hashlib.sha256(hash_key.encode()).hexdigest()
+        #hash_key = hashlib.sha256(hash_key.encode()).hexdigest()
+        hash_key = hex(zlib.crc32(hash_key.encode()))[2:] # new hash key - only 8 digits
         # return hash_key
         return hash_key[:10]
     except Exception as e:
         print('Something went wrong when trying to generate a unique hash qr_code_key')
         print(e)
+
+############################################################
+# Function_name: test_fit_using_ttf_font
+#
+# Function_logic:
+# Adjust font size to fit available white space instead of overlapping the qr code
+# 
+#
+# Arguments: 
+#    - font_size: font size
+#    - string: adjusting text
+#    - font_file: font filename
+#    - available_width: adjusting text
+
+    
+# Return:
+#    - font : updated ttf font
+#    - font size: newly update font size
+############################################################
+def test_fit_using_ttf_font(font_size, string, font_filename, available_width):
+    font = ImageFont.truetype(font_filename, font_size)
+    text_width, text_height = font.getsize(string)
+    while not (text_width <= available_width):
+        font_size -= 1
+        font = ImageFont.truetype(font_filename, font_size)
+        text_width, text_height = font.getsize(string)
+        #print(f"font mask= {font.getmask(string).getbbox()}")
+
+    return ImageFont.truetype(font_filename, font_size), font_size
+############################################################
+# Function_name: anchor_adjustment
+#
+# Function_logic:
+# adjust text location using middle bottom to text location using left upper
+# 
+#
+# Arguments: 
+#    - desired_location : the text location using middle bottom part of text
+#    - string: the adjusting text
+#    - font: ttf font
+    
+# Return:
+#    - left_location : the text location using left upper
+############################################################
+def anchor_adjustment(desired_location, string, font): # find location for "la" given "ms"
+    text_width, text_height = font.getsize(string)
+    left_location = (desired_location[0] - text_width / 2, desired_location[1] - text_height)
+    return left_location
+
 
 ############################################################
 # Function_name: small_format
@@ -62,50 +113,66 @@ def generate_hash_key(row, features_selected):
 # Return:
 #    - img: a designed label image with text and qr code
 ############################################################
-def small_format(qr_img, obj):
-    path1 = "/server/files_for_label/"
+def small_format(qr_img, obj, font_filename, background_filename):
+    try:
+        # setup values
+        size_l = (696, 223)  # size of the large label
+        qr_margin = 40  # the pixel distance between right border of qr code and the right border of white background
+        qr_size = (size_l[1] - 2 * qr_margin, size_l[1] - 2 * qr_margin)
+        qr_location = (size_l[0] - qr_size[0] - int(qr_margin/4), qr_margin)  # where the left upper corner of qr code is
 
-    # font
-    path2 = "/server/files_for_label/"
-    fnt1 = ImageFont.truetype(path2 + "reg.ttf", 25)
-    fnt2 = ImageFont.truetype(path2 + "reg.ttf", 25)
-#     fnt1 = ImageFont.load_default() # anchor = "la"
-#     fnt2 = ImageFont.load_default()
-    temperature, PH = obj["storage_condition"].split(", ")
-    concentration, contents = obj["contents"].split(", ")
+        # get a background white image for label
+        img = Image.open(background_filename)
+        # resize it to a label size suitable for QR printer
+        img = img.resize(size_l)
+        # resize the qr image to put on the background
+        qr_img = qr_img.resize(qr_size)
+        img.paste(qr_img, qr_location)  # left upper corner coordinates
 
-    # get a background white image for label
-    img = Image.open(path1 + "white_image.jpeg")
-    # resize it to a label size suitable for QR printer
-    img = img.resize((250, 250))
-    # add text to the background
-    draw = ImageDraw.Draw(img)
-    msg1 = "Prep By: " + obj["analyst"]
-    msg2 = "Stored at: " + temperature
+        draw = ImageDraw.Draw(img)
 
-    # rotated text at the left
-    left_location = anchor_adjustment((125, 25), msg1, draw)
-    draw.text(left_location, msg2, font=fnt1, fill=0)
-    # rotated text at the right
-    left_location = anchor_adjustment((125, 245), msg1, draw)
-    draw.text(left_location, msg1, font=fnt2, fill=0)
+        # information needed
+        experiment_id = obj["experiment_id"]
+        condition = obj["storage_condition"]
+        contents = obj["contents"]
+        date_entered = obj["date_entered"]
+        expiration_date = obj["expiration_date"]
+        analyst = obj["analyst"]
 
-    img = img.rotate(90)
-    draw = ImageDraw.Draw(img)
-    #test_fit(draw, font_size, string, font_file, img_bound)
-    # text at the bottom
-    left_location = anchor_adjustment((125, 245), obj["experiment_id"], draw)
-    draw.text(left_location, obj["experiment_id"], font=fnt1, fill=0)
-    # text at the top
-    left_location = anchor_adjustment((125, 25), obj["date_entered"], draw)
-    draw.text(left_location, obj["date_entered"], font=fnt1, fill=0)
-    
-    # resize the qr image to put on the background
-    qr_img = qr_img.resize((230, 230))
-    # crop the white margin of qr code
-    qr_img = qr_img.crop((15, 15, 215, 215))
-    # add qr code image to the background
-    img.paste(qr_img, (25, 25)) # left upper corner coordinates
+        msg_num = 4
+        fnt_sizes = [30, 30, 30, 30]
+        fnts = []
+        for i in range(msg_num):
+            fnts.append(ImageFont.truetype(font_filename, fnt_sizes[i]))
+
+        # formatting
+        lines = []
+        lines.append(str(experiment_id))  # line 1: font size = 30
+        lines.append("Prep " + str(date_entered))  # line 2: font size = 25
+        lines.append("Prep By: " + analyst)  # line 3: font size = 25
+        lines.append("Stored at: " + condition) # line 4: font size = 25
+
+        left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
+        available_width = size_l[0]/2
+
+        # adjust font size to fit the available width
+        fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
+        fnt2_new, fnt2_size = test_fit_using_ttf_font(fnt_sizes[1], lines[1], font_filename, available_width)
+        fnt3_new, fnt3_size = test_fit_using_ttf_font(fnt_sizes[2], lines[2], font_filename, available_width)
+        fnt4_new, fnt4_size = test_fit_using_ttf_font(fnt_sizes[3], lines[3], font_filename, available_width)
+
+        line_heights = [60, 100, 140, 180]
+        # draw texts line by line on the white background
+        draw.text((left_align, line_heights[0]), lines[0], font=fnt1_new, stroke_width = 1, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[1]), lines[1], font=fnt2_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
+
+
+        return img
+    except Exception as e:
+            print('Something went wrong when trying to create a small QR_CODE')
+            print(e)
 
     return img
 
@@ -124,36 +191,76 @@ def small_format(qr_img, obj):
 #    - img: a designed label image with text and qr code
 ############################################################
 
-def large_format(qr_img,obj):
-    # place qr code image on background
-    path = join_directories('files_for_label')
+def large_format(qr_img, obj, font_filename, background_filename):
+    # setup values
+    size_l = (696, 223) # size of the large label
+    qr_margin = 40 # the pixel distance between right border of qr code and the right border of white background
+    qr_size = (size_l[1]-2*qr_margin, size_l[1]-2*qr_margin)
+    qr_location = (size_l[0]-qr_size[0]-qr_margin, qr_margin) # where the left upper corner of qr code is
+
     # get a background white image for label
-    img = Image.open(path + "white_image.jpeg")
+    img = Image.open(background_filename)
     # resize it to a label size suitable for QR printer
-    img = img.resize((696, 250))
+    img = img.resize(size_l)
     # resize the qr image to put on the background
-    qr_img = qr_img.resize((230, 230))
-    img.paste(qr_img, (450, 15))
+    qr_img = qr_img.resize(qr_size)
+    img.paste(qr_img, qr_location) # left upper corner coordinates
 
     # Add text information
+    try:
+        msg_num = 5
+        fnt_sizes = [40,40,25,40,40]
+        fnts = []
+        for i in range(msg_num):
+            fnts.append(ImageFont.truetype(font_filename, fnt_sizes[i]))
+        current_font = "non-default"
+    except:
+        # default font
+        fnt = ImageFont.load_default()
+        current_font = "default"
+        return None
+
     draw = ImageDraw.Draw(img)
-    fnt1 = ImageFont.load_default()
-    fnt2 = ImageFont.load_default()
-    fnt3 = ImageFont.load_default()
 
-    left_align = 40
-    msg1 = obj["storage_condition"]
-    msg2 = obj["contents"]
-    msg3 = "Prep By: " + obj["analyst"]
+    # information needed
+    experiment_id = obj["experiment_id"]
+    temperature, PH = obj["storage_condition"].split(", ")
+    concentration, contents = obj["contents"].split(", ")
+    date_entered = obj["date_entered"]
+    expiration_date = obj["expiration_date"]
+    analyst = obj["analyst"]
 
-    draw.text((left_align, 55), obj["experiment_id"], font=fnt1, stroke_width=1, anchor="ls", fill=0)
-    draw.text((left_align, 90), 'This is a placeholder for now', font=fnt1, anchor="ls", fill=0)
-    draw.text((left_align, 130), msg1, font=fnt2, anchor="ls", fill=0)
-    draw.text((left_align, 190), msg2, font=fnt3, anchor="ls", fill=0)
-    draw.text((left_align, 220), msg3, font=fnt3, anchor="ls", fill=0)
+    # formatting
+    lines = []
+    lines.append(str(experiment_id)) # line 1: font size = 30, stroke width = 1
+    lines.append(str(contents)) # line 2: font size = 30
+    lines.append(str(concentration) + ", " + str(PH)) # line 3: font size = 20
+    lines.append("Prep " + str(date_entered) + " " * 4 + "Expiry " + str(expiration_date)) # line 4: font size = 25
+    lines.append("Prep By: " + analyst + " " * 5 + "Stored at: " + temperature) # line 5: font size = 25
+
+    if current_font == "non-default":
+        left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
+        available_width = size_l[0]-qr_size[0]-qr_margin-left_align
+
+        # adjust font size to fit the available width
+        fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
+        fnt2_new, fnt2_size = test_fit_using_ttf_font(fnt_sizes[1], lines[1], font_filename, available_width)
+        fnt3_new, fnt3_size = test_fit_using_ttf_font(fnt_sizes[2], lines[2], font_filename, available_width)
+        fnt4_new, fnt4_size = test_fit_using_ttf_font(fnt_sizes[3], lines[3], font_filename, available_width)
+        fnt5_new, fnt5_size = test_fit_using_ttf_font(fnt_sizes[4], lines[4], font_filename, available_width)
+
+
+        line_heights = [50, 90, 130, 170, 200]
+        # draw texts line by line on the white background
+        draw.text((left_align, line_heights[0]), lines[0], font=fnt1_new, stroke_width=1, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[1]), lines[1], font=fnt2_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[4]), lines[4], font=fnt5_new, anchor="ls", fill=0)
+
+
 
     return img
-
 ############################################################
 # Function_name: create_qr_code
 #
@@ -164,10 +271,10 @@ def large_format(qr_img,obj):
 # Arguments: 
 #       (example)
 #    - obj = { 
-#        'experiment_id':"5010613001301" ,
+#        'experiment_id':"NB-9999999-301-01" ,
 #        'storage_condition': "50C, pH 6.8",
-#        'analyst': "AKPM",
 #        'contents': "10 mM, potassium phosphate buffer",
+#        'analyst': "AKPM",
 #        'date_entered': "10/24/2022",
 #        'expiration_date': "01/28/2022",
 #        'date_modified': "10/24/2022"
@@ -207,19 +314,27 @@ def create_qr_code(obj):
         qr_code_dir = join_directories('qr_codes')
         image_dir = join_directories('files_for_label')
         img = qr_img
+        
+        path = image_dir
+        font_filename = os.path.join(image_dir,"reg.ttf")
+        background_filename = os.path.join(image_dir,"white_image.jpeg")
         #This will change according to the size
         if size == '2mL':
-                img = small_format(qr_img, obj)
+            img = small_format(qr_img, obj, font_filename, background_filename)
         elif size == '2.5mL':
-                img = small_format(qr_img, obj)
+            img = small_format(qr_img, obj, font_filename, background_filename)
         elif size == '4mL':
-                img = large_format(qr_img, obj)
-        elif size == '20mL':
-                img = large_format(qr_img, obj)
+            img = large_format(qr_img, obj, font_filename, background_filename)
+        else: # 20mL
+            img = large_format(qr_img, obj, font_filename, background_filename)
+        
+            
 
         #Temporarily saves QR code into /qr_codes folder
         #Will be improved as we do not need to store it as we will send the QR code to the printer
-        img.save(f'{qr_code_dir}/{unique_hash}.png')
-        img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png')) ## need to modify the filename
+        qr_img.save(f'{qr_code_dir}/{unique_hash}.png')
+        #img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png')) ## need to modify the filename
+        img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png'))
+        
         return unique_hash
 

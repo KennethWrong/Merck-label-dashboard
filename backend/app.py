@@ -37,7 +37,7 @@ def create_qr_code():
 #Return generated .png of qr_code to the front-end
 @app.route('/assets/qr_code/<qr_code_key>',methods=['GET'])
 def get_qr_code(qr_code_key):
-    return send_file(f"qr_codes/{qr_code_key}.png", mimetype='image/png')
+    return send_file(f"files_for_label/{qr_code_key}.png", mimetype='image/png')
 
 #For front-end sending CSV to backend
 @app.route('/csv',methods=['POST'])
