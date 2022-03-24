@@ -110,64 +110,58 @@ def anchor_adjustment(desired_location, string, font): # find location for "la" 
 def small_format(qr_img, obj, font_filename, background_filename):
     try:
         # setup values
-        size_s = (223, 223) # size of the small label
-        qr_margin = 8
-        qr_size = (size_s[0]-qr_margin*2, size_s[1]-qr_margin*2)
-        qr_size_crop = (qr_margin*2+5, qr_margin*2+5, qr_size[0]-qr_margin*2-5, qr_size[0]-qr_margin*2-5)
-        qr_location = (qr_margin*3+5, qr_margin*3+5)
-        actual_margin = qr_margin*3+5 # max height for text around qr code
-        text_mb_upper = (size_s[0]//2, actual_margin) # the middle bottom location of text located at the upper margin
-        text_mb_lower = (size_s[1]//2, size_s[1])
-
-
-        fnt = ImageFont.truetype(font_filename, 24)
-        #fnt = ImageFont.load_default() # anchor = "la"
+        size_l = (696, 223)  # size of the large label
+        qr_margin = 40  # the pixel distance between right border of qr code and the right border of white background
+        qr_size = (size_l[1] - 2 * qr_margin, size_l[1] - 2 * qr_margin)
+        qr_location = (size_l[0] - qr_size[0] - int(qr_margin/4), qr_margin)  # where the left upper corner of qr code is
 
         # get a background white image for label
         img = Image.open(background_filename)
         # resize it to a label size suitable for QR printer
-        img = img.resize(size_s)
+        img = img.resize(size_l)
+        # resize the qr image to put on the background
+        qr_img = qr_img.resize(qr_size)
+        img.paste(qr_img, qr_location)  # left upper corner coordinates
+
+        draw = ImageDraw.Draw(img)
 
         # information needed
         experiment_id = obj["experiment_id"]
         temperature, PH = obj["storage_condition"].split(", ")
+        concentration, contents = obj["contents"].split(", ")
         date_entered = obj["date_entered"]
+        expiration_date = obj["expiration_date"]
         analyst = obj["analyst"]
 
+        msg_num = 4
+        fnt_sizes = [30, 30, 30, 30]
+        fnts = []
+        for i in range(msg_num):
+            fnts.append(ImageFont.truetype(font_filename, fnt_sizes[i]))
 
-        # add text to the background
-        draw = ImageDraw.Draw(img)
-        msg1 = "Stored at: " + temperature
-        msg2 = "Prep By: " + analyst
-        msg3 = date_entered
-        msg4 = experiment_id
+        # formatting
+        lines = []
+        lines.append(str(experiment_id))  # line 1: font size = 30
+        lines.append("Prep " + str(date_entered))  # line 2: font size = 25
+        lines.append("Prep By: " + analyst)  # line 3: font size = 25
+        lines.append("Stored at: " + temperature) # line 4: font size = 25
 
-        # rotated text at the left
-        left_location = anchor_adjustment(text_mb_upper, msg1, fnt)
-        draw.text(left_location, msg1, font=fnt, fill=0)
-        # rotated text at the right
-        left_location = anchor_adjustment(text_mb_lower, msg2, fnt)
-        draw.text(left_location, msg2, font=fnt, fill=0)
+        left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
+        available_width = size_l[0]/2
 
-        img = img.rotate(90)
-        draw = ImageDraw.Draw(img)
-        #test_fit(draw, font_size, string, font_file, img_bound)
+        # adjust font size to fit the available width
+        fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
+        fnt2_new, fnt2_size = test_fit_using_ttf_font(fnt_sizes[1], lines[1], font_filename, available_width)
+        fnt3_new, fnt3_size = test_fit_using_ttf_font(fnt_sizes[2], lines[2], font_filename, available_width)
+        fnt4_new, fnt4_size = test_fit_using_ttf_font(fnt_sizes[3], lines[3], font_filename, available_width)
 
+        line_heights = [60, 100, 140, 180]
+        # draw texts line by line on the white background
+        draw.text((left_align, line_heights[0]), lines[0], font=fnt1_new, stroke_width = 1, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[1]), lines[1], font=fnt2_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
+        draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
 
-        # text at the bottom
-        left_location = anchor_adjustment(text_mb_lower, msg4, fnt)
-        draw.text(left_location, msg4, font=fnt, fill=0)
-        # text at the top
-        left_location = anchor_adjustment(text_mb_upper, msg3, fnt)
-        draw.text(left_location, msg3, font=fnt, fill=0)
-
-        
-        # resize the qr image to put on the background
-        qr_img = qr_img.resize(qr_size)
-        # crop the white margin of qr code
-        qr_img = qr_img.crop(qr_size_crop)
-        # add qr code image to the background
-        img.paste(qr_img, qr_location) # left upper corner coordinates
 
         return img
     except Exception as e:
@@ -194,7 +188,7 @@ def small_format(qr_img, obj, font_filename, background_filename):
 def large_format(qr_img, obj, font_filename, background_filename):
     # setup values
     size_l = (696, 223) # size of the large label
-    qr_margin = 5 # the pixel distance between right border of qr code and the right border of white background
+    qr_margin = 40 # the pixel distance between right border of qr code and the right border of white background
     qr_size = (size_l[1]-2*qr_margin, size_l[1]-2*qr_margin)
     qr_location = (size_l[0]-qr_size[0]-qr_margin, qr_margin) # where the left upper corner of qr code is
 
@@ -241,7 +235,6 @@ def large_format(qr_img, obj, font_filename, background_filename):
     if current_font == "non-default":
         left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
         available_width = size_l[0]-qr_size[0]-qr_margin-left_align
-        print(available_width)
 
         # adjust font size to fit the available width
         fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
@@ -272,7 +265,7 @@ def large_format(qr_img, obj, font_filename, background_filename):
 # Arguments: 
 #       (example)
 #    - obj = { 
-#        'experiment_id':"5010613001301" ,
+#        'experiment_id':"NB-9999999-301-01" ,
 #        'storage_condition': "50C, pH 6.8",
 #        'contents': "10 mM, potassium phosphate buffer",
 #        'analyst': "AKPM",
