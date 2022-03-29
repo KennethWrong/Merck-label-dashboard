@@ -12,7 +12,7 @@ const sizes = ["2mL", "2.5mL", "4mL", "20mL"];
 
 const printImg = () => {
   const url =
-    "https://upload.wikimedia.org/wikipedia/commons/b/b6/Image_created_with_a_mobile_phone.png";
+  `http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`;
 
   const win = window.open("");
   win.document.write("<html><head>");
