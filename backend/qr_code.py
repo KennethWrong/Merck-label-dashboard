@@ -140,7 +140,7 @@ def small_format(qr_img, obj, font_filename, background_filename):
         analyst = obj["analyst"]
 
         msg_num = 4
-        fnt_sizes = [30, 30, 30, 30]
+        fnt_sizes = [25, 25, 25, 25]
         fnts = []
         for i in range(msg_num):
             fnts.append(ImageFont.truetype(font_filename, fnt_sizes[i]))
@@ -150,10 +150,10 @@ def small_format(qr_img, obj, font_filename, background_filename):
         lines.append(str(experiment_id))  # line 1: font size = 30
         lines.append("Prep " + str(date_entered))  # line 2: font size = 25
         lines.append("Prep By: " + analyst)  # line 3: font size = 25
-        lines.append("Stored at: " + condition) # line 4: font size = 25
+        lines.append("Stored at: " + storage_condition) # line 4: font size = 25
 
-        left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
-        available_width = size_l[0]/2
+        left_align = 200 # the pixel distance between the left of the text and the left of the border of white background
+        available_width = size_l[0]
 
         # adjust font size to fit the available width
         fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
@@ -207,25 +207,19 @@ def large_format(qr_img, obj, font_filename, background_filename):
     img.paste(qr_img, qr_location) # left upper corner coordinates
 
     # Add text information
-    try:
-        msg_num = 5
-        fnt_sizes = [40,40,25,40,40]
-        fnts = []
-        for i in range(msg_num):
-            fnts.append(ImageFont.truetype(font_filename, fnt_sizes[i]))
-        current_font = "non-default"
-    except:
-        # default font
-        fnt = ImageFont.load_default()
-        current_font = "default"
-        return None
+    msg_num = 4
+    fnt_sizes = [40,40,40,40]
+    fnts = []
+    for i in range(msg_num):
+        fnts.append(ImageFont.truetype(font_filename, fnt_sizes[i]))
+
 
     draw = ImageDraw.Draw(img)
 
     # information needed
     experiment_id = obj["experiment_id"]
-    temperature, PH = obj["storage_condition"].split(", ")
-    concentration, contents = obj["contents"].split(", ")
+    storage_condition = obj["storage_condition"]
+    contents = obj["contents"]
     date_entered = obj["date_entered"]
     expiration_date = obj["expiration_date"]
     analyst = obj["analyst"]
@@ -234,29 +228,26 @@ def large_format(qr_img, obj, font_filename, background_filename):
     lines = []
     lines.append(str(experiment_id)) # line 1: font size = 30, stroke width = 1
     lines.append(str(contents)) # line 2: font size = 30
-    lines.append(str(concentration) + ", " + str(PH)) # line 3: font size = 20
+
     lines.append("Prep " + str(date_entered) + " " * 4 + "Expiry " + str(expiration_date)) # line 4: font size = 25
-    lines.append("Prep By: " + analyst + " " * 5 + "Stored at: " + temperature) # line 5: font size = 25
+    lines.append("Prep By: " + str(analyst) + " " * 5 + "Stored at: " + str(storage_condition)) # line 5: font size = 25
 
-    if current_font == "non-default":
-        left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
-        available_width = size_l[0]-qr_size[0]-qr_margin-left_align
+    left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
+    available_width = size_l[0] - qr_size[0] - qr_margin - left_align
 
-        # adjust font size to fit the available width
-        fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
-        fnt2_new, fnt2_size = test_fit_using_ttf_font(fnt_sizes[1], lines[1], font_filename, available_width)
-        fnt3_new, fnt3_size = test_fit_using_ttf_font(fnt_sizes[2], lines[2], font_filename, available_width)
-        fnt4_new, fnt4_size = test_fit_using_ttf_font(fnt_sizes[3], lines[3], font_filename, available_width)
-        fnt5_new, fnt5_size = test_fit_using_ttf_font(fnt_sizes[4], lines[4], font_filename, available_width)
+    # adjust font size to fit the available width
+    fnt1_new, fnt1_size = test_fit_using_ttf_font(fnt_sizes[0], lines[0], font_filename, available_width)
+    fnt2_new, fnt2_size = test_fit_using_ttf_font(fnt_sizes[1], lines[1], font_filename, available_width)
+    fnt3_new, fnt3_size = test_fit_using_ttf_font(fnt_sizes[2], lines[2], font_filename, available_width)
+    fnt4_new, fnt4_size = test_fit_using_ttf_font(fnt_sizes[3], lines[3], font_filename, available_width)
 
 
-        line_heights = [50, 90, 130, 170, 200]
-        # draw texts line by line on the white background
-        draw.text((left_align, line_heights[0]), lines[0], font=fnt1_new, stroke_width=1, anchor="ls", fill=0)
-        draw.text((left_align, line_heights[1]), lines[1], font=fnt2_new, anchor="ls", fill=0)
-        draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
-        draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
-        draw.text((left_align, line_heights[4]), lines[4], font=fnt5_new, anchor="ls", fill=0)
+    line_heights = [50, 90, 130, 170, 200]
+    # draw texts line by line on the white background
+    draw.text((left_align, line_heights[0]), lines[0], font=fnt1_new, stroke_width=1, anchor="ls", fill=0)
+    draw.text((left_align, line_heights[1]), lines[1], font=fnt2_new, anchor="ls", fill=0)
+    draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
+    draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
 
 
 
