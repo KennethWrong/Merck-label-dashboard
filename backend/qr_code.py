@@ -13,6 +13,12 @@ def join_directories(*paths):
         destination_dir = functools.reduce(os.path.join,paths)
         return destination_dir+'/'
 
+def anchor_adjustment(desired_location,string,draw): # find location for "la" given "ms"
+    text_width, text_height = draw.textsize(string, font=ImageFont.load_default())
+    left_location = (desired_location[0] - text_width / 2, desired_location[1] - text_height)
+    return left_location
+
+
 
 ############################################################
 # Function_name: generate_hash_key
@@ -127,8 +133,8 @@ def small_format(qr_img, obj, font_filename, background_filename):
 
         # information needed
         experiment_id = obj["experiment_id"]
-        temperature, PH = obj["storage_condition"].split(", ")
-        concentration, contents = obj["contents"].split(", ")
+        condition = obj["storage_condition"]
+        contents = obj["contents"]
         date_entered = obj["date_entered"]
         expiration_date = obj["expiration_date"]
         analyst = obj["analyst"]
@@ -144,7 +150,7 @@ def small_format(qr_img, obj, font_filename, background_filename):
         lines.append(str(experiment_id))  # line 1: font size = 30
         lines.append("Prep " + str(date_entered))  # line 2: font size = 25
         lines.append("Prep By: " + analyst)  # line 3: font size = 25
-        lines.append("Stored at: " + temperature) # line 4: font size = 25
+        lines.append("Stored at: " + condition) # line 4: font size = 25
 
         left_align = 20  # the pixel distance between the left of the text and the left of the border of white background
         available_width = size_l[0]/2
@@ -168,7 +174,7 @@ def small_format(qr_img, obj, font_filename, background_filename):
             print('Something went wrong when trying to create a small QR_CODE')
             print(e)
 
-    return None
+    return img
 
 ############################################################
 # Function_name: large_format

@@ -32,6 +32,7 @@ function CreateQRcode() {
   const [experimentId, setExperimentId] = useState("");
   const [storageCondition, setStorageCondition] = useState("");
   const [size, setSize] = useState(sizes[0]);
+  const [trueSize, setTrueSize] = useState(size)
   const [qr, setQR] = useState("");
   const [dateEntered, setDateEntered] = useState(new Date());
   const [dateModified, setDateModified] = useState(new Date());
@@ -83,6 +84,7 @@ function CreateQRcode() {
         };
         let res = await axios.post("http://localhost:5000/create/qr_code", obj);
         setQR(res.data);
+        setTrueSize(size);
         setExperimentId("");
         setAnalyst("");
         setExpiry(new Date());
@@ -220,7 +222,7 @@ function CreateQRcode() {
             <h1>QR code has Key {qr}</h1>
             <img
               alt="Generated QR Code"
-              src={`http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`}
+              src={`http://localhost:5000/assets/qr_code/${qr}_${trueSize}?${experimentId}`}
             />
           </div>
         ) : (
