@@ -10,21 +10,6 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 
 const sizes = ["2mL", "2.5mL", "4mL", "20mL"];
 
-const printImg = () => {
-  const url =
-  `http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`;
-
-  const win = window.open("");
-  win.document.write("<html><head>");
-  win.document.write("</head><body>");
-  win.document.write('<img id="print-image-element" src="' + url + '"/>');
-  win.document.write(
-    '<script>var img = document.getElementById("print-image-element"); img.addEventListener("load",function(){ window.focus(); window.print(); window.document.close(); window.close(); }); </script>'
-  );
-  win.document.write("</body></html>");
-  win.window.print();
-};
-
 function CreateQRcode() {
   const [analyst, setAnalyst] = useState("");
   const [expiry, setExpiry] = useState(new Date());
@@ -32,7 +17,7 @@ function CreateQRcode() {
   const [experimentId, setExperimentId] = useState("");
   const [storageCondition, setStorageCondition] = useState("");
   const [size, setSize] = useState(sizes[0]);
-  const [trueSize, setTrueSize] = useState(size)
+  const [trueSize, setTrueSize] = useState(size);
   const [qr, setQR] = useState("");
   const [dateEntered, setDateEntered] = useState(new Date());
   const [dateModified, setDateModified] = useState(new Date());
@@ -70,33 +55,46 @@ function CreateQRcode() {
     setExperimentId(e.target.value);
   };
 
+  const printImg = () => {
+    const url = `http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`;
+
+    const win = window.open("");
+    win.document.write("<html><head>");
+    win.document.write("</head><body>");
+    win.document.write('<img id="print-image-element" src="' + url + '"/>');
+    win.document.write(
+      '<script>var img = document.getElementById("print-image-element"); img.addEventListener("load",function(){ window.focus(); window.print(); window.document.close(); window.close(); }); </script>'
+    );
+    win.document.write("</body></html>");
+    win.window.print();
+  };
+
   const sendQRCode = async () => {
-      try {
-        let obj = {
-          experiment_id: experimentId,
-          analyst: analyst,
-          expiration_date: dateToString(expiry),
-          date_modified: dateToString(dateModified),
-          date_entered: dateToString(dateEntered),
-          contents: contents,
-          storage_condition: storageCondition,
-          size: size,
-        };
-        let res = await axios.post("http://localhost:5000/create/qr_code", obj);
-        setQR(res.data);
-        setTrueSize(size);
-        setExperimentId("");
-        setAnalyst("");
-        setExpiry(new Date());
-        setDateEntered(new Date());
-        setDateModified(new Date());
-        setContents("");
-        setStorageCondition("");
-        console.log(qr);
-      } 
-      catch (e) {
-        console.log(e);
-      }
+    try {
+      let obj = {
+        experiment_id: experimentId,
+        analyst: analyst,
+        expiration_date: dateToString(expiry),
+        date_modified: dateToString(dateModified),
+        date_entered: dateToString(dateEntered),
+        contents: contents,
+        storage_condition: storageCondition,
+        size: size,
+      };
+      let res = await axios.post("http://localhost:5000/create/qr_code", obj);
+      setQR(res.data);
+      setTrueSize(size);
+      setExperimentId("");
+      setAnalyst("");
+      setExpiry(new Date());
+      setDateEntered(new Date());
+      setDateModified(new Date());
+      setContents("");
+      setStorageCondition("");
+      console.log(qr);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -205,11 +203,19 @@ function CreateQRcode() {
           variant="contained"
           color="primary"
           size="large"
-          disabled = {experimentId && analyst && expiry && dateModified && dateEntered && contents && storageCondition? 
-            false: true}
+          disabled={
+            experimentId &&
+            analyst &&
+            expiry &&
+            dateModified &&
+            dateEntered &&
+            contents &&
+            storageCondition
+              ? false
+              : true
+          }
           onClick={() => {
             sendQRCode();
-            printImg();
           }}
         >
           Create
@@ -225,6 +231,17 @@ function CreateQRcode() {
               src={`http://localhost:5000/assets/qr_code/${qr}_${trueSize}?${experimentId}`}
             />
           </div>
+        ) : (
+          ""
+        )}
+        {qr ? (
+          <Button
+            onClick={() => {
+              printImg();
+            }}
+          >
+            Print
+          </Button>
         ) : (
           ""
         )}
