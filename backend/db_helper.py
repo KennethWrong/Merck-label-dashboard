@@ -44,7 +44,7 @@ def insert_new_sample(qr_code_key, sample_obj):
         session.add(new_sample)
         session.commit()
     except Exception as e:
-        print(e)
+        print(e, flush=True)
         print('Something went wrong when trying to insert a new sample into the database',flush=True)
     
     return True

@@ -133,7 +133,7 @@ def small_format(qr_img, obj, font_filename, background_filename):
 
         # information needed
         experiment_id = obj["experiment_id"]
-        condition = obj["storage_condition"]
+        storage_condition = obj["storage_condition"]
         contents = obj["contents"]
         date_entered = obj["date_entered"]
         expiration_date = obj["expiration_date"]

@@ -26,6 +26,7 @@ def get_vile_info_from_qr_code():
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
+    print(content, flush=True)
     #With the qr_code_size we can call create qr_code small, medium large
     qr = qr_code.create_qr_code(content)
 
