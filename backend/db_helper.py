@@ -32,6 +32,7 @@ def insert_new_sample(qr_code_key, sample_obj):
     date_modified = get_strf_utc_date()
 
     try:
+        print('this worked!', flush=True)
         new_sample = Sample(qr_code_key = qr_code_key,
                                 experiment_id = experiment_id,
                                 storage_condition = storage_condition,
@@ -46,6 +47,7 @@ def insert_new_sample(qr_code_key, sample_obj):
     except Exception as e:
         print(e, flush=True)
         print('Something went wrong when trying to insert a new sample into the database',flush=True)
+        return False
     
     return True
 
@@ -110,7 +112,7 @@ def retrieve_sample_information_with_key(qr_code_key):
     try:
         res = session.query(Sample).filter(Sample.qr_code_key == qr_code_key).first()
     except Exception as e:
-        print(e)
+        print(e, flush=True)
         print("Something went wrong when attempting to retrieve a sample from the database \
             using the QR_CODE_KEY. Check if the QR_CODE_KEY being passed is of correct format",flush=True)
     return res
@@ -133,12 +135,11 @@ def retrieve_sample_information_with_key(qr_code_key):
 def check_if_key_exists(qr_code_key):
     try:
         res = session.query(Sample.qr_code_key).filter_by(qr_code_key=qr_code_key).first()
-        return True
+        if res: return True
     except Exception as e:
         print(e)
         print('Something went wrong when checking if entry exists. Check the format of the QR_Code_key being passed.',flush=True)
     return False
-
 
 
 ############################################################
