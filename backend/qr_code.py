@@ -167,7 +167,8 @@ def small_format(qr_img, obj, font_filename, background_filename):
         draw.text((left_align, line_heights[1]), lines[1], font=fnt2_new, anchor="ls", fill=0)
         draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
         draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
-
+        
+        img = img.rotate(90, expand = True)
 
         return img
     except Exception as e:
@@ -249,7 +250,7 @@ def large_format(qr_img, obj, font_filename, background_filename):
     draw.text((left_align, line_heights[2]), lines[2], font=fnt3_new, anchor="ls", fill=0)
     draw.text((left_align, line_heights[3]), lines[3], font=fnt4_new, anchor="ls", fill=0)
 
-
+    img = img.rotate(90, expand = True)
 
     return img
 ############################################################
