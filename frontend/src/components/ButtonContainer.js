@@ -88,7 +88,7 @@ function ButtonContainer() {
           Create QR Code
         </Button>
         <Button
-          href="/findProduct"
+          href="/csv_upload"
           variant="contained"
           startIcon={<ImageSearchIcon />}
         >

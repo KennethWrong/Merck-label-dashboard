@@ -5,6 +5,7 @@ import QRScanner from "./components/QRScanner";
 import Home from "./components/Home";
 import CreateQRcode from "./routes/CreateQRcode";
 import { FindProduct } from "./components/FindProduct";
+import FileUpload from "./components/FileUpload";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/QRScanner" element={<QRScanner />} />
         <Route path="/create/qr_code" element={<CreateQRcode />} />
         <Route path="/findProduct" element={<FindProduct />} />
+        <Route path="/csv_upload" element={<FileUpload />} />
       </Routes>
     </>
   );

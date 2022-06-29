@@ -10027,6 +10027,13 @@
   optionalDependencies:
     "fsevents" "^2.1.3"
 
+"react-to-print@2.12.0":
+  "integrity" "sha512-wGD05on6m7LUVG7OyQjiaVyphJtyadiFfmT5XPM1Ef5sXPQY0+qmlBxGVsUMXzlTWtsV3sZdlVqzGi4Eftcu0A=="
+  "resolved" "https://registry.npmjs.org/react-to-print/-/react-to-print-2.12.0.tgz"
+  "version" "2.12.0"
+  dependencies:
+    "prop-types" "^15.7.2"
+
 "react-transition-group@^4.0.0", "react-transition-group@^4.4.0", "react-transition-group@^4.4.2":
   "integrity" "sha512-/RNYfRAMlZwDSr6z4zNKV6xu53/e2BuaBbGhbyYIXTrmgu/bGHzmqOs7mJSJBHy9Ud+ApHx3QjrkKSp1pxvlFg=="
   "resolved" "https://registry.npmjs.org/react-transition-group/-/react-transition-group-4.4.2.tgz"

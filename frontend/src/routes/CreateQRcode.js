@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef, forwardRef } from "react";
 import { Stack, TextField } from "@mui/material";
 import { Button } from "@mui/material";
 import axios from "axios";
 import DatePicker from "@mui/lab/DatePicker";
+import ReactToPrint from "react-to-print";
 
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
@@ -22,7 +23,8 @@ function CreateQRcode() {
   const [dateEntered, setDateEntered] = useState(new Date());
   const [dateModified, setDateModified] = useState(new Date());
   const [base64Encoding, setBase64Encoding] = useState("");
-  // const [selectedDate, handleDateChange] = useState(new Date());
+
+  let componentRef = useRef();
 
   const dateToString = (dateObj) =>
     `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(
@@ -237,19 +239,36 @@ function CreateQRcode() {
           ""
         )}
         {qr ? (
-          <Button
+          <ReactToPrint
+          trigger={() => <Button
             onClick={() => {
               printImg();
             }}
           >
             Print
-          </Button>
+          </Button>}
+          content={() => componentRef}
+          
+          />
         ) : (
           ""
         )}
+        <div style={{ display: "none" }}>
+          <ComponentToPrint ref={(el) => (componentRef = el)} base64Encoding={base64Encoding} />
+        </div> 
       </Stack>
     </Stack>
   );
 }
+
+export const ComponentToPrint = forwardRef((props, ref) => {
+  let base64Encoding = props.base64Encoding
+  return (
+    <img ref={ref}
+      alt="Generated QR Code"
+      src={base64Encoding?`data:image/png;base64,${base64Encoding}`:''}
+    />
+  );
+});
 
 export default CreateQRcode;
