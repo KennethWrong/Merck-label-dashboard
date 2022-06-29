@@ -2,16 +2,8 @@ from flask import make_response, json
 import pandas as pd
 import qr_code
 from datetime import datetime, date
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import sessionmaker
 import db_helper
-from schema import Sample, get_database_uri
 
-#Creates a session with your local postgresql database
-DATABASE_URI = get_database_uri()
-db = create_engine(DATABASE_URI) 
-Session = sessionmaker(db) 
-session = Session()
 
 ############################################################
 # Function_name: create_response
@@ -151,3 +143,10 @@ def parse_csv_to_db(file_path,info):
         except Exception as e:
                 print(e, flush=True)
                 return 500
+
+
+def generate_qr_code_on_the_fly(qr_code_key):
+        dic = retrieve_sample_information_with_key(qr_code_key)
+        return qr_code.create_qr_code_without_saving(dic)
+
+

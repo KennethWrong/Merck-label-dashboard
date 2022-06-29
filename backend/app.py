@@ -26,14 +26,21 @@ def get_vile_info_from_qr_code():
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    print(content, flush=True)
     #With the qr_code_size we can call create qr_code small, medium large
-    qr = qr_code.create_qr_code(content)
+    image_base64, qr_code_key  = qr_code.create_qr_code_without_saving(content)
+    # qr = qr_code.create_qr_code(content)
 
     #insert sample and information into qr_code
-    api_helper.insert_new_sample(qr, content)
-    response = api_helper.create_response(qr)
-    return response
+    api_helper.insert_new_sample(qr_code_key, content)
+
+    message = {
+        'qr_code_key': qr_code_key,
+        'image_string': image_base64,
+    }
+
+    status = 200 if image_base64 != None else 500
+
+    return api_helper.create_response_from_scanning(message=message, status_code=status)
 
 #Return generated .png of qr_code to the front-end
 @app.route('/assets/qr_code/<qr_code_key>',methods=['GET'])

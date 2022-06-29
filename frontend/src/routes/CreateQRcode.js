@@ -21,6 +21,7 @@ function CreateQRcode() {
   const [qr, setQR] = useState("");
   const [dateEntered, setDateEntered] = useState(new Date());
   const [dateModified, setDateModified] = useState(new Date());
+  const [base64Encoding, setBase64Encoding] = useState("");
   // const [selectedDate, handleDateChange] = useState(new Date());
 
   const dateToString = (dateObj) =>
@@ -82,16 +83,17 @@ function CreateQRcode() {
         size: size,
       };
       let res = await axios.post("http://localhost:5000/create/qr_code", obj);
-      setQR(res.data);
+      console.log(res);
+      setQR(res.data["qr_code_key"]);
       setTrueSize(size);
-      setExperimentId("");
-      setAnalyst("");
-      setExpiry(new Date());
+      // setExperimentId("");
+      // setAnalyst("");
+      // setExpiry(new Date());
       setDateEntered(new Date());
       setDateModified(new Date());
-      setContents("");
-      setStorageCondition("");
-      console.log(qr);
+      // setContents("");
+      // setStorageCondition("");
+      setBase64Encoding(res.data["image_string"])
     } catch (e) {
       console.log(e);
     }
@@ -228,7 +230,7 @@ function CreateQRcode() {
             <h1>QR code has Key {qr}</h1>
             <img
               alt="Generated QR Code"
-              src={`http://localhost:5000/assets/qr_code/${qr}_${trueSize}?${experimentId}`}
+              src={base64Encoding?`data:image/png;base64,${base64Encoding}`:''}
             />
           </div>
         ) : (

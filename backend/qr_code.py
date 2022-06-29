@@ -4,8 +4,12 @@ import os
 from PIL import Image, ImageDraw,ImageFont
 import functools
 import sys
+import io
+
+from sqlalchemy import true
 from db_helper import get_strf_utc_date
 import zlib
+import base64
 
 def join_directories(*paths):
         curr_dir = os.getcwd()
@@ -113,7 +117,7 @@ def anchor_adjustment(desired_location, string, font): # find location for "la" 
 # Return:
 #    - img: a designed label image with text and qr code
 ############################################################
-def small_format(qr_img, obj, font_filename, background_filename):
+def small_format(qr_img, obj, font_filename, background_filename) -> Image.Image:
     try:
         # setup values
         size_l = (696, 223)  # size of the large label
@@ -330,3 +334,75 @@ def create_qr_code(obj):
         
         return unique_hash
 
+############################################################
+# Function_name: create_qr_code_without_saving
+#
+# Function_logic:
+# Creates a unique qr_code_key using arguments from obj, then uses qrcode library
+# to generate a QR code containing the date and the qr_code key  
+#
+# Arguments: 
+#       (example)
+#    - obj = { 
+#        'experiment_id':"NB-9999999-301-01" ,
+#        'storage_condition': "50C, pH 6.8",
+#        'contents': "10 mM, potassium phosphate buffer",
+#        'analyst': "AKPM",
+#        'date_entered': "10/24/2022",
+#        'expiration_date': "01/28/2022",
+#        'date_modified': "10/24/2022"
+#    }
+# Return:
+#    - qr_code_key : Returns generated hashed qr_code_key
+############################################################
+def create_qr_code_without_saving(obj):
+
+        #Check if field is empty
+        if not obj['analyst'] or not obj['experiment_id']:
+                return None
+        
+        #Modified hash key (need to improve with order-carefree)
+        features_selected = ['experiment_id', 'storage_condition', 'analyst','contents']
+
+        #Check if date_entered is already provided to us
+        obj['date_entered'] = obj.get('date_entered', get_strf_utc_date())
+        size = obj.get('size','2mL')
+        unique_hash = generate_hash_key(obj, features_selected) # a string
+        
+        #Creating an instance of qrcode
+        obj_qrkey = {
+                "qr_code_key": f"{unique_hash}",
+                "date_entered": f"{obj['date_entered']}",
+        }
+
+        #Using the library to create the QR code
+        qr = qrcode.QRCode(
+                version=1,
+                box_size=10,
+                border=5)
+        qr.add_data(obj_qrkey)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill='black', back_color='white')
+
+        image_dir = join_directories('files_for_label')
+        img = qr_img
+        
+        font_filename = os.path.join(image_dir,"reg.ttf")
+        background_filename = os.path.join(image_dir,"white_image.jpeg")
+        #This will change according to the size
+        if size == '2mL':
+            img = small_format(qr_img, obj, font_filename, background_filename)
+        elif size == '2.5mL':
+            img = small_format(qr_img, obj, font_filename, background_filename)
+        elif size == '4mL':
+            img = large_format(qr_img, obj, font_filename, background_filename)
+        else: # 20mL
+            img = large_format(qr_img, obj, font_filename, background_filename)
+
+        output = io.BytesIO()
+        img.save(output, format="PNG")
+        base64_encoded = base64.b64encode(output.getvalue())
+        print(base64_encoded.decode('utf-8'), flush=True)
+
+        
+        return base64_encoded.decode('utf-8'), unique_hash
