@@ -58,18 +58,9 @@ function CreateQRcode() {
     setExperimentId(e.target.value);
   };
 
-  const printImg = () => {
-    const url = `http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`;
-
-    const win = window.open("");
-    win.document.write("<html><head>");
-    win.document.write("</head><body>");
-    win.document.write('<img id="print-image-element" src="' + url + '"/>');
-    win.document.write(
-      '<script>var img = document.getElementById("print-image-element"); img.addEventListener("load",function(){ window.focus(); window.print(); window.document.close(); window.close(); }); </script>'
-    );
-    win.document.write("</body></html>");
-    win.window.print();
+  const printImg = async () => {
+    let size_string = size.substring(0, size.length - 2)
+    let res = await axios.get(`http://localhost:5000/print/${qr}?size=${size_string}`);
   };
 
   const sendQRCode = async () => {
@@ -85,16 +76,15 @@ function CreateQRcode() {
         size: size,
       };
       let res = await axios.post("http://localhost:5000/create/qr_code", obj);
-      console.log(res);
       setQR(res.data["qr_code_key"]);
       setTrueSize(size);
-      // setExperimentId("");
-      // setAnalyst("");
-      // setExpiry(new Date());
+      setExperimentId("");
+      setAnalyst("");
+      setExpiry(new Date());
       setDateEntered(new Date());
       setDateModified(new Date());
-      // setContents("");
-      // setStorageCondition("");
+      setContents("");
+      setStorageCondition("");
       setBase64Encoding(res.data["image_string"])
     } catch (e) {
       console.log(e);
@@ -226,7 +216,6 @@ function CreateQRcode() {
         </Button>
       </Stack>
       <Stack alignItems={"center"} width={"45vw"} justifyContent={"center"}>
-        {/* <h1>{qr}</h1> */}
         {qr ? (
           <div>
             <h1>QR code has Key {qr}</h1>
@@ -238,37 +227,19 @@ function CreateQRcode() {
         ) : (
           ""
         )}
-        {qr ? (
-          <ReactToPrint
-          trigger={() => <Button
+        {qr ? <Button
+            variant="contained"
             onClick={() => {
               printImg();
             }}
           >
             Print
-          </Button>}
-          content={() => componentRef}
-          
-          />
-        ) : (
+          </Button>: (
           ""
         )}
-        <div style={{ display: "none" }}>
-          <ComponentToPrint ref={(el) => (componentRef = el)} base64Encoding={base64Encoding} />
-        </div> 
       </Stack>
     </Stack>
   );
 }
-
-export const ComponentToPrint = forwardRef((props, ref) => {
-  let base64Encoding = props.base64Encoding
-  return (
-    <img ref={ref}
-      alt="Generated QR Code"
-      src={base64Encoding?`data:image/png;base64,${base64Encoding}`:''}
-    />
-  );
-});
 
 export default CreateQRcode;

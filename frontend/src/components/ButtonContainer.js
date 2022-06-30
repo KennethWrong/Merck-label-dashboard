@@ -13,7 +13,6 @@ function ButtonContainer() {
   const [file, setFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
-  console.log(file);
 
   const handleFileChange = (e) => {
     e.preventDefault();
@@ -60,19 +59,6 @@ function ButtonContainer() {
       )}
 
       <Stack className="button-grp" direction="row" spacing={2}>
-        <div>
-          <input type="file" onChange={(e) => handleFileChange(e)} />
-        </div>
-
-        <Button
-          disabled={file ? false : true}
-          variant="contained"
-          startIcon={<UploadIcon />}
-          onClick={(e) => handleFileSubmit(e)}
-        >
-          Upload
-        </Button>
-
         <Button
           href="/QRScanner"
           variant="contained"
@@ -92,7 +78,7 @@ function ButtonContainer() {
           variant="contained"
           startIcon={<ImageSearchIcon />}
         >
-          Find Product
+          Upload CSV
         </Button>
       </Stack>
     </>

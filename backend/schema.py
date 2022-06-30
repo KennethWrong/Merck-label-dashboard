@@ -13,10 +13,6 @@ pg_username = os.getenv('POSTGRES_USERNAME')
 pg_password = os.getenv('POSTGRES_PASSWORD')
 pg_port = os.getenv('POSTGRES_PORT')
 
-#http://jf-postgres-test-server.postgres.database.azure.com
-#azure_admin
-#tU!fE1ys38Pi
-
 #Your username and password
 db_uri = f"postgresql+psycopg2://{pg_username}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
 db = create_engine(db_uri) 

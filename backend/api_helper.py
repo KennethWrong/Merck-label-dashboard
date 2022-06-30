@@ -3,6 +3,7 @@ import pandas as pd
 import qr_code
 from datetime import datetime, date
 import db_helper
+from print_helper import print_image
 
 
 ############################################################
@@ -77,6 +78,7 @@ def retrieve_sample_information_with_key(qr_code_key):
         qr_code_key = str(qr_code_key)
 
         res = db_helper.retrieve_sample_information_with_key(qr_code_key)
+        print(f"QR KEY IS {qr_code_key}")
         # if qr_code_key does not exist in DB
         if not res:
                 return {}, 404
@@ -116,6 +118,7 @@ def retrieve_sample_information_with_key(qr_code_key):
 ############################################################
 def parse_csv_to_db(file_path,info):
         try:
+                return_dic = {}
                 df = pd.read_csv(file_path)
                 current_date = db_helper.get_strf_utc_date()
                 for index,row in df.iterrows():
@@ -131,7 +134,9 @@ def parse_csv_to_db(file_path,info):
                                 'date_modified': current_date,
                         }
 
-                        qr_code_key = qr_code.create_qr_code(dic)
+                        qr_code_key, base64_hash = qr_code.create_qr_code_without_saving_csv(dic)
+                        base64_hash = base64_hash
+                        return_dic[qr_code_key] = base64_hash
                         #If we are inserting a new_sample, we update new_sample_insert count
                         if insert_new_sample(qr_code_key, dic):
                                 info[0] += 1
@@ -139,14 +144,18 @@ def parse_csv_to_db(file_path,info):
                         else:
                                 info[1] += 1
 
-                return 200
+                return 200, return_dic
         except Exception as e:
                 print(e, flush=True)
-                return 500
+                return 500, None
 
 
-def generate_qr_code_on_the_fly(qr_code_key):
-        dic = retrieve_sample_information_with_key(qr_code_key)
-        return qr_code.create_qr_code_without_saving(dic)
+
+def print_label_with_qr_code_key(qr_code_key, size='2ml'):
+        dic, _ = retrieve_sample_information_with_key(qr_code_key)
+        dic['size'] = size
+        print(dic, flush=True)
+        img = qr_code.create_qr_code_return_image_obj(dic)
+        return print_image(img)
 
 
