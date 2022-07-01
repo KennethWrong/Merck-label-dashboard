@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_from_directory, redirect
 import api_helper
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -10,9 +10,16 @@ import re
 import uuid
 import db_helper
 
-app = Flask(__name__, static_url_path='')
+redirect_url = "http://localhost:5000/"
+
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 app.config['DEBUG']=True
+app.config['CORS_HEADERS'] = 'application/json'
 CORS(app)
+
+@app.route("/", methods=["GET"])
+def home():
+    return send_from_directory(app.static_folder, 'index.html')
 
 #End point for qr_code scanning
 @app.route('/scan/qr_code', methods=['POST'])
@@ -87,5 +94,28 @@ def upload_label_image():
     return api_helper.create_response()
 
 
+#for redirecting
+
+
+@app.route('/scan/qr_code', methods=['GET'])
+def redirect_get_vile_info_from_qr_code():
+    return redirect(redirect_url, code=302)
+
+@app.route('/create/qr_code', methods=['GET'])
+def redirect_qr_code():
+    return redirect(redirect_url, code=302)
+
+@app.route('/QRScanner', methods=['GET'])
+def redirect_qr_scanner():
+    return redirect(redirect_url, code=302)
+
+@app.route('/csv_upload', methods=['GET'])
+def redirect_csv_upload():
+    return redirect(redirect_url, code=302)
+
+@app.route('/lookup', methods=['GET'])
+def redirect_lookup():
+    return redirect(redirect_url, code=302)
+    
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')

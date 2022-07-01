@@ -16,8 +16,7 @@ export const PrintCard = (props) => {
 
     const printImg = async () => {
         try{
-            let res = await axios.get(`http://localhost:5000/print/${props.qr_key}?size=${size}`);
-        console.log(res)
+            await axios.get(`http://localhost:5000/print/${props.qr_key}?size=${size}`);
         }catch(e){
             props.changeDisplayMessage(`Error occured when priting QRCode Label: ${props.qr_key}`, "error")
         }
@@ -53,7 +52,7 @@ return (
                         Print
                 </Button>
                 <FormControl sx={{mb:'1.0em'}}>
-                    <InputLabel>Size</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Size</InputLabel>
                     <Select
                     value={size}
                     onChange={handleChange}

@@ -1,5 +1,5 @@
 import { useState} from "react";
-import { Stack, TextField, Alert, Box, Hidden } from "@mui/material";
+import { Stack, TextField, Alert, Box} from "@mui/material";
 import { Button } from "@mui/material";
 import axios from "axios";
 import DatePicker from "@mui/lab/DatePicker";
@@ -69,7 +69,7 @@ function CreateQRcode() {
   const printImg = async () => {
     let size_string = size.substring(0, size.length - 2)
     try{
-      let res = await axios.get(`http://localhost:5000/print/${qr}?size=${size_string}`);
+      await axios.get(`http://localhost:5000/print/${qr}?size=${size_string}`);
       changeDisplayMessage("Successfully printed QRCode", "success")
     } catch(e){
         changeDisplayMessage("An error has occured. Please try again.", "error")

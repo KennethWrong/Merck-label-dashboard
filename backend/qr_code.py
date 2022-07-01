@@ -11,7 +11,7 @@ from db_helper import get_strf_utc_date
 import zlib
 import base64
 
-CUR_DIR = os.getcwd() + '/backend'
+CUR_DIR = os.getcwd()
 LABEL_FILE = CUR_DIR + '/files_for_label/'
 
 def join_directories(*paths):
@@ -24,8 +24,6 @@ def anchor_adjustment(desired_location,string,draw): # find location for "la" gi
     text_width, text_height = draw.textsize(string, font=ImageFont.load_default())
     left_location = (desired_location[0] - text_width / 2, desired_location[1] - text_height)
     return left_location
-
-
 
 ############################################################
 # Function_name: generate_hash_key
@@ -311,18 +309,10 @@ def create_qr_code_return_image_obj(obj):
         image_dir = join_directories('files_for_label')
         img = qr_img
         
-        path = image_dir
         font_filename = os.path.join(image_dir,"reg.ttf")
         background_filename = os.path.join(image_dir,"white_image.jpeg")
         #This will change according to the size
-        if size == '2mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '2.5mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '4mL':
-            img = large_format(qr_img, obj, font_filename, background_filename)
-        else: # 20mL
-            img = large_format(qr_img, obj, font_filename, background_filename)
+        img = return_image_by_size(size, qr_img, obj, font_filename, background_filename)
         
         return img
 
@@ -381,68 +371,11 @@ def create_qr_code_without_saving(obj):
         
         font_filename = os.path.join(image_dir,"reg.ttf")
         background_filename = os.path.join(image_dir,"white_image.jpeg")
-        #This will change according to the size
-        if size == '2mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '2.5mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '4mL':
-            img = large_format(qr_img, obj, font_filename, background_filename)
-        else: # 20mL
-            img = large_format(qr_img, obj, font_filename, background_filename)
         
+        img = return_image_by_size(size, qr_img, obj, font_filename, background_filename)
         img = img.rotate(angle=270, expand=True)
         base64_encoded = convert_image_to_base64(img)
 
-        return  unique_hash, base64_encoded
-
-def create_qr_code_without_saving_csv(obj):
-        #Check if field is empty
-        if not obj['analyst'] or not obj['experiment_id']:
-                return None
-        
-        #Modified hash key (need to improve with order-carefree)
-        features_selected = ['experiment_id', 'storage_condition', 'analyst','contents']
-
-        #Check if date_entered is already provided to us
-        obj['date_entered'] = obj.get('date_entered', get_strf_utc_date())
-        size = obj.get('size','2mL')
-        unique_hash = generate_hash_key(obj, features_selected) # a string
-        
-        #Creating an instance of qrcode
-        obj_qrkey = {
-                "qr_code_key": f"{unique_hash}",
-                "date_entered": f"{obj['date_entered']}",
-        }
-
-        #Using the library to create the QR code
-        qr = qrcode.QRCode(
-                version=1,
-                box_size=10,
-                border=5)
-        qr.add_data(obj_qrkey)
-        qr.make(fit=True)
-        qr_img = qr.make_image(fill='black', back_color='white')
-
-        image_dir = join_directories('files_for_label')
-        img = qr_img
-        
-        font_filename = os.path.join(image_dir,"reg.ttf")
-        background_filename = os.path.join(image_dir,"white_image.jpeg")
-        #This will change according to the size
-        if size == '2mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '2.5mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '4mL':
-            img = large_format(qr_img, obj, font_filename, background_filename)
-        else: # 20mL
-            img = large_format(qr_img, obj, font_filename, background_filename)
-
-        img = img.rotate(angle=270, expand=True)
-        base64_encoded = convert_image_to_base64(img)
-
-        
         return  unique_hash, base64_encoded
 
 def convert_image_to_base64(img):
@@ -450,3 +383,15 @@ def convert_image_to_base64(img):
         img.save(output, format="PNG")
         base64_encoded = base64.b64encode(output.getvalue())
         return base64_encoded.decode('utf-8')
+
+
+def return_image_by_size(size, qr_img, obj, font_filename, background_filename):
+    size = size[:-2] + 'ml'
+    if size == '2ml':
+        return small_format(qr_img, obj, font_filename, background_filename)
+    elif size == '2.5ml':
+        return small_format(qr_img, obj, font_filename, background_filename)
+    elif size == '4ml':
+        return large_format(qr_img, obj, font_filename, background_filename)
+    else: # 20mL
+        return large_format(qr_img, obj, font_filename, background_filename)

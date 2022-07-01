@@ -135,7 +135,7 @@ def parse_csv_to_db(file_path,info):
                                 'date_modified': current_date,
                         }
 
-                        qr_code_key, base64_hash = qr_code.create_qr_code_without_saving_csv(dic)
+                        qr_code_key, base64_hash = qr_code.create_qr_code_without_saving(dic)
                         base64_hash = base64_hash
                         return_dic[qr_code_key] = base64_hash
                         #If we are inserting a new_sample, we update new_sample_insert count

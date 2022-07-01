@@ -1,6 +1,7 @@
 import "./App.css";
 import Appbar from "./components/Appbar";
-import { Routes, Route } from "react-router";
+import { Routes, Route} from "react-router";
+import { BrowserRouter} from "react-router-dom";
 import QRScanner from "./components/QRScanner";
 import Home from "./components/Home";
 import CreateQRcode from "./routes/CreateQRcode";
