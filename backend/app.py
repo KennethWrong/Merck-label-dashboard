@@ -64,7 +64,7 @@ def dump_csv():
     file = request.files['csv']
     filename = secure_filename(file.filename)
     #Get path of the csv file to place .csv file into the folder
-    dir_path = os.path.join(os.getcwd(),'backend','csv')
+    dir_path = os.path.join(os.getcwd(),'csv')
     full_path = os.path.join(dir_path,f"{filename}")
     #Save the file
     file.save(full_path)
