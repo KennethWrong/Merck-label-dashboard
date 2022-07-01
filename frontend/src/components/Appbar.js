@@ -2,6 +2,7 @@ import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
+import '../App.css'; 
 
 
 import Button from "@mui/material/Button";
@@ -9,7 +10,7 @@ import ButtonContainer from "./ButtonContainer";
 
 export default function ButtonAppBar() {
   return (
-    <>
+    <div className="appBar">
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="static">
           <Toolbar>
@@ -38,6 +39,6 @@ export default function ButtonAppBar() {
       </Box>
       <br />
       <ButtonContainer />
-    </>
+    </div>
   );
 }

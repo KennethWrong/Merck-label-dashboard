@@ -390,12 +390,11 @@ def create_qr_code_without_saving(obj):
             img = large_format(qr_img, obj, font_filename, background_filename)
         else: # 20mL
             img = large_format(qr_img, obj, font_filename, background_filename)
+        
+        img = img.rotate(angle=270, expand=True)
+        base64_encoded = convert_image_to_base64(img)
 
-        output = io.BytesIO()
-        img.save(output, format="PNG")
-        base64_encoded = base64.b64encode(output.getvalue())
-
-        return  unique_hash, base64_encoded.decode('utf-8')
+        return  unique_hash, base64_encoded
 
 def create_qr_code_without_saving_csv(obj):
         #Check if field is empty
@@ -441,9 +440,13 @@ def create_qr_code_without_saving_csv(obj):
             img = large_format(qr_img, obj, font_filename, background_filename)
 
         img = img.rotate(angle=270, expand=True)
-        output = io.BytesIO()
-        img.save(output, format="PNG")
-        base64_encoded = base64.b64encode(output.getvalue())
+        base64_encoded = convert_image_to_base64(img)
 
         
-        return  unique_hash, base64_encoded.decode('utf-8')
+        return  unique_hash, base64_encoded
+
+def convert_image_to_base64(img):
+    with io.BytesIO() as output:
+        img.save(output, format="PNG")
+        base64_encoded = base64.b64encode(output.getvalue())
+        return base64_encoded.decode('utf-8')

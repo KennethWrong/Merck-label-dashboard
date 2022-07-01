@@ -66,6 +66,16 @@ def dump_csv():
     dic['message'] = f"Total Entries:{values[0]+values[1]} New:{values[0]} Updated:{values[1]}"
     return api_helper.create_response_from_scanning(status_code=status, message=dic)
 
+@app.route('/asset/<qr_code_key>',methods=['GET'])
+def get_qr_code_image(qr_code_key):
+    base64_image = api_helper.retrieve_label_with_qr_code_key(qr_code_key)
+    status_code = 200 if base64_image else 500
+    return_dic = {
+        'image':base64_image
+    }
+    return api_helper.create_response_from_scanning(status_code=status_code, message=return_dic)
+
+
 #/upload/label_image
 @app.route('/upload/label_image', methods=['POST'])
 def upload_label_image():

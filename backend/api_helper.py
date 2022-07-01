@@ -4,6 +4,7 @@ import qr_code
 from datetime import datetime, date
 import db_helper
 from print_helper import print_image
+from qr_code import convert_image_to_base64
 
 
 ############################################################
@@ -154,8 +155,16 @@ def parse_csv_to_db(file_path,info):
 def print_label_with_qr_code_key(qr_code_key, size='2ml'):
         dic, _ = retrieve_sample_information_with_key(qr_code_key)
         dic['size'] = size
-        print(dic, flush=True)
         img = qr_code.create_qr_code_return_image_obj(dic)
         return print_image(img)
 
 
+def retrieve_label_with_qr_code_key(qr_code_key):
+        dic, status = retrieve_sample_information_with_key(qr_code_key)
+        # print(dic, status, flush=True)
+        if status != 200:
+                return None
+
+        img = qr_code.create_qr_code_return_image_obj(dic)
+        img = img.rotate(angle=270, expand=True)
+        return convert_image_to_base64(img)     

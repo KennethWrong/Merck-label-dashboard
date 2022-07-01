@@ -1,7 +1,6 @@
 import { Box } from "@mui/system";
 import axios from "axios";
-import React, { useEffect } from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import QRScan from "react-qr-reader";
 import BasicTable from "./ScanTable";
 import { Alert } from "@mui/material";
@@ -9,9 +8,8 @@ import { Alert } from "@mui/material";
 function QRScanner() {
   const [qrScan, setQrScan] = useState("");
   const [total_scans, setTotal_scans] = useState([]);
-  const [errorMessage, setErrorMessage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(false);
-
+  const [message, setMessage] = useState(false);
+  const [severity, setSeverity] = useState("success")
   
 
   const handleScan = (data) => {
@@ -24,6 +22,15 @@ function QRScanner() {
   const handleError = (e) => {
     console.error(e);
   };
+
+  const changeDisplayMessage = (message, severity) => {
+    setMessage(message);
+    setSeverity(severity)
+    setTimeout(() => {
+        setSeverity("success");
+        setMessage("");
+    }, 1000);
+}
 
   useEffect(() => {
     if (qrScan) {
@@ -49,17 +56,11 @@ function QRScanner() {
           total_scans.splice(0, 0, new_scanned_item)
           setTotal_scans(total_scans)
           
-          setSuccessMessage(true);
-          setTimeout(() => {
-            setSuccessMessage(false);
-          }, 1500);
+          changeDisplayMessage(`Successfully printed QRCode label: ${qrScan}`, "success")
           
         } catch (e) {
+          changeDisplayMessage("An error has occured. Please try again.", "error")
           console.log(e);
-          setErrorMessage(true);
-          setTimeout(() => {
-            setErrorMessage(false);
-          }, 1500);
         }
       }
       sendInfoToFlask();
@@ -67,46 +68,34 @@ function QRScanner() {
   }, [qrScan, total_scans]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <h1>Qr Scanner</h1>
-      <div>
-        <QRScan
-          delay={300}
-          onError={handleError}
-          onScan={handleScan}
-          style={{ height: 240, width: 320, borderRadius: 5 }}
-        />
-      </div>
-      <Box sx={{ mt: 12 }}>
-        <BasicTable total_scans={total_scans}/>
+    <>
+      <Box mt={5} mb={5} sx={{visibility: message?'visible':'hidden'}}>
+        <Alert severity={severity} style={{ fontSize: "20px", minHeight:"2.2em"}}>
+            {message}
+        </Alert>
       </Box>
-
-      {successMessage ? (
-        <Box mt={5} mb={5}>
-          <Alert severity="success" style={{ fontSize: "40px" }}>
-            Successfully Scanned Item
-          </Alert>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <h1>Qr Scanner</h1>
+        <div>
+          <QRScan
+            delay={300}
+            onError={handleError}
+            onScan={handleScan}
+            style={{ height: 240, width: 320, borderRadius: 5 }}
+          />
+        </div>
+        <Box sx={{ mt: 12 }}>
+          <BasicTable total_scans={total_scans}/>
         </Box>
-      ) : (
-        ""
-      )}
-      {errorMessage ? (
-        <Box mt={5} mb={5}>
-          <Alert severity="error" style={{ fontSize: "40px" }}>
-            Scan was unsuccessful, try again please
-          </Alert>
-        </Box>
-      ) : (
-        ""
-      )}
-    </div>
+      </div>
+    </>
   );
 }
 

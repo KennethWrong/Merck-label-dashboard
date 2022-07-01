@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Stack } from "@mui/material";
 import { Button } from "@mui/material";
-import UploadIcon from "@mui/icons-material/Upload";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import axios from "axios";
 import { Alert } from "@mui/material";
@@ -79,6 +78,13 @@ function ButtonContainer() {
           startIcon={<ImageSearchIcon />}
         >
           Upload CSV
+        </Button>
+        <Button
+          href="/lookup"
+          variant="contained"
+          startIcon={<ImageSearchIcon />}
+        >
+          Key Look-up
         </Button>
       </Stack>
     </>

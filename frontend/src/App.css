@@ -12,9 +12,27 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  animation: fadeIn ease 1.5s;
 }
 
 .button-grp{
   justify-content: center;
   align-content: center;
+}
+
+.merckLogo{
+  animation: fadeIn ease 1.5s;
+}
+
+.appBar{
+  animation: fadeIn ease 1.0s;
+}
+
+@keyframes fadeIn{
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
 }
