@@ -1,86 +1,46 @@
-import React, { useState } from "react";
+import React from "react";
 import { Stack } from "@mui/material";
 import { Button } from "@mui/material";
-import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
-import axios from "axios";
-import { Alert } from "@mui/material";
-import Box from "@material-ui/core/Box";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import ImageSearchIcon from "@mui/icons-material/ImageSearch";
+import { useNavigate } from "react-router-dom";
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import FlipIcon from '@mui/icons-material/Flip';
+
 
 function ButtonContainer() {
-  const [file, setFile] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(false);
+  let history = useNavigate();
 
-  const handleFileChange = (e) => {
-    e.preventDefault();
-    setFile(e.target.files[0]);
-  };
-
-  const handleFileSubmit = async (e) => {
-    e.preventDefault();
-    let formData = new FormData();
-    formData.append("csv", file);
-    try {
-      let res = await axios.post("http://localhost:5000/csv", formData);
-      setSuccessMessage(res.data);
-      setTimeout(() => {
-        setSuccessMessage(false);
-      }, 2000);
-    } catch {
-      setErrorMessage(true);
-      setTimeout(() => {
-        setErrorMessage(false);
-      }, 1500);
-    }
-  };
+  function handleButtonClick(link) {
+    history(link);
+  }
 
   return (
     <>
-      {successMessage ? (
-        <Box mt={5} mb={5}>
-          <Alert severity="success" style={{ fontSize: "40px" }}>
-            {successMessage}
-          </Alert>
-        </Box>
-      ) : (
-        ""
-      )}
-      {errorMessage ? (
-        <Box mt={5} mb={5}>
-          <Alert severity="error" style={{ fontSize: "40px" }}>
-            CSV File Upload failed, Please check file
-          </Alert>
-        </Box>
-      ) : (
-        ""
-      )}
-
       <Stack className="button-grp" direction="row" spacing={2}>
         <Button
-          href="/QRScanner"
+          onClick={() => {handleButtonClick('/QRScanner')}}
           variant="contained"
-          startIcon={<QrCodeScannerIcon />}
+          startIcon={<FlipIcon />}
         >
           Scan Tag
         </Button>
         <Button
-          href="/create/qr_code"
+          onClick={() => {handleButtonClick('/create/qr_code')}}
           variant="contained"
           startIcon={<QrCodeIcon />}
         >
           Create QR Code
         </Button>
         <Button
-          href="/csv_upload"
+          onClick={() => {handleButtonClick('/csv_upload')}}
           variant="contained"
-          startIcon={<ImageSearchIcon />}
+          startIcon={<UploadFileIcon />}
         >
           Upload CSV
         </Button>
         <Button
-          href="/lookup"
+          onClick={() => {handleButtonClick('/lookup')}}
           variant="contained"
           startIcon={<ImageSearchIcon />}
         >

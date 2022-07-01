@@ -30,10 +30,9 @@ const FileUpload = () => {
         try {
             let res = await axios.post("http://localhost:5000/csv", formData);
             let data = res.data
-            console.log(res.data)
-            setLabelData(data)
             setMessage(data["message"]);
             delete data["message"]
+            setLabelData(data)
             setTimeout(() => {
               setMessage("");
           }, 2000);

@@ -30,7 +30,7 @@ function QRScanner() {
         setSeverity("success");
         setMessage("");
     }, 1000);
-}
+  }
 
   useEffect(() => {
     if (qrScan) {
