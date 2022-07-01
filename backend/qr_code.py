@@ -4,11 +4,18 @@ import os
 from PIL import Image, ImageDraw,ImageFont
 import functools
 import sys
+import io
+
+from sqlalchemy import true
 from db_helper import get_strf_utc_date
 import zlib
+import base64
+
+CUR_DIR = os.getcwd()
+LABEL_FILE = CUR_DIR + '/files_for_label/'
 
 def join_directories(*paths):
-        curr_dir = os.getcwd()
+        curr_dir = CUR_DIR
         paths = [curr_dir] + list(paths)
         destination_dir = functools.reduce(os.path.join,paths)
         return destination_dir+'/'
@@ -17,8 +24,6 @@ def anchor_adjustment(desired_location,string,draw): # find location for "la" gi
     text_width, text_height = draw.textsize(string, font=ImageFont.load_default())
     left_location = (desired_location[0] - text_width / 2, desired_location[1] - text_height)
     return left_location
-
-
 
 ############################################################
 # Function_name: generate_hash_key
@@ -113,7 +118,7 @@ def anchor_adjustment(desired_location, string, font): # find location for "la" 
 # Return:
 #    - img: a designed label image with text and qr code
 ############################################################
-def small_format(qr_img, obj, font_filename, background_filename):
+def small_format(qr_img, obj, font_filename, background_filename) -> Image.Image:
     try:
         # setup values
         size_l = (696, 223)  # size of the large label
@@ -172,11 +177,10 @@ def small_format(qr_img, obj, font_filename, background_filename):
 
         return img
     except Exception as e:
-            print('Something went wrong when trying to create a small QR_CODE')
+            print('Something went wrong when trying to create a small QR_CODE', e)
             print(e)
 
     return img
-
 ############################################################
 # Function_name: large_format
 #
@@ -274,7 +278,66 @@ def large_format(qr_img, obj, font_filename, background_filename):
 # Return:
 #    - qr_code_key : Returns generated hashed qr_code_key
 ############################################################
-def create_qr_code(obj):
+def create_qr_code_return_image_obj(obj):
+        #Check if field is empty
+        if not obj['analyst'] or not obj['experiment_id']:
+                return None
+        
+        #Modified hash key (need to improve with order-carefree)
+        features_selected = ['experiment_id', 'storage_condition', 'analyst','contents']
+
+        #Check if date_entered is already provided to us
+        obj['date_entered'] = obj.get('date_entered', get_strf_utc_date())
+        size = obj.get('size','2mL')
+        unique_hash = generate_hash_key(obj, features_selected) # a string
+        
+        #Creating an instance of qrcode
+        obj_qrkey = {
+                "qr_code_key": f"{unique_hash}",
+                "date_entered": f"{obj['date_entered']}",
+        }
+
+        #Using the library to create the QR code
+        qr = qrcode.QRCode(
+                version=1,
+                box_size=10,
+                border=5)
+        qr.add_data(obj_qrkey)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill='black', back_color='white')
+
+        image_dir = join_directories('files_for_label')
+        img = qr_img
+        
+        font_filename = os.path.join(image_dir,"reg.ttf")
+        background_filename = os.path.join(image_dir,"white_image.jpeg")
+        #This will change according to the size
+        img = return_image_by_size(size, qr_img, obj, font_filename, background_filename)
+        
+        return img
+
+############################################################
+# Function_name: create_qr_code_without_saving
+#
+# Function_logic:
+# Creates a unique qr_code_key using arguments from obj, then uses qrcode library
+# to generate a QR code containing the date and the qr_code key  
+#
+# Arguments: 
+#       (example)
+#    - obj = { 
+#        'experiment_id':"NB-9999999-301-01" ,
+#        'storage_condition': "50C, pH 6.8",
+#        'contents': "10 mM, potassium phosphate buffer",
+#        'analyst': "AKPM",
+#        'date_entered': "10/24/2022",
+#        'expiration_date': "01/28/2022",
+#        'date_modified': "10/24/2022"
+#    }
+# Return:
+#    - qr_code_key : Returns generated hashed qr_code_key
+############################################################
+def create_qr_code_without_saving(obj):
 
         #Check if field is empty
         if not obj['analyst'] or not obj['experiment_id']:
@@ -303,30 +366,32 @@ def create_qr_code(obj):
         qr.make(fit=True)
         qr_img = qr.make_image(fill='black', back_color='white')
 
-        qr_code_dir = join_directories('qr_codes')
         image_dir = join_directories('files_for_label')
         img = qr_img
         
-        path = image_dir
         font_filename = os.path.join(image_dir,"reg.ttf")
         background_filename = os.path.join(image_dir,"white_image.jpeg")
-        #This will change according to the size
-        if size == '2mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '2.5mL':
-            img = small_format(qr_img, obj, font_filename, background_filename)
-        elif size == '4mL':
-            img = large_format(qr_img, obj, font_filename, background_filename)
-        else: # 20mL
-            img = large_format(qr_img, obj, font_filename, background_filename)
         
-            
+        img = return_image_by_size(size, qr_img, obj, font_filename, background_filename)
+        img = img.rotate(angle=270, expand=True)
+        base64_encoded = convert_image_to_base64(img)
 
-        #Temporarily saves QR code into /qr_codes folder
-        #Will be improved as we do not need to store it as we will send the QR code to the printer
-        qr_img.save(f'{qr_code_dir}/{unique_hash}.png')
-        #img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png')) ## need to modify the filename
-        img.save(os.path.join(image_dir,f'{unique_hash}_{size}.png'))
-        
-        return unique_hash
+        return  unique_hash, base64_encoded
 
+def convert_image_to_base64(img):
+    with io.BytesIO() as output:
+        img.save(output, format="PNG")
+        base64_encoded = base64.b64encode(output.getvalue())
+        return base64_encoded.decode('utf-8')
+
+
+def return_image_by_size(size, qr_img, obj, font_filename, background_filename):
+    size = size[:-2] + 'ml'
+    if size == '2ml':
+        return small_format(qr_img, obj, font_filename, background_filename)
+    elif size == '2.5ml':
+        return small_format(qr_img, obj, font_filename, background_filename)
+    elif size == '4ml':
+        return large_format(qr_img, obj, font_filename, background_filename)
+    else: # 20mL
+        return large_format(qr_img, obj, font_filename, background_filename)

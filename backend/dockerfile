@@ -5,18 +5,20 @@ RUN apt-get update && apt-get install -y software-properties-common gcc && \
 
 RUN apt-get update && apt-get install -y python3.6 python3-distutils python3-pip python3-apt
 
+RUN apt-get update && apt-get -y install sudo
+
 RUN apt-get -y install libpq-dev gcc \
     && pip install psycopg2
 
+RUN pip install sqlalchemy
 
 COPY . /server
 WORKDIR /server
 
-RUN apt-get update
-
-RUN pip install sqlalchemy
-
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update
+RUN sudo apt-get -y install usbutils libusb-1.0-0
+
 ENV FLASK_DEBUG=1
 ENV FLASK_ENV=development
 

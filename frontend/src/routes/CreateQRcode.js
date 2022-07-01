@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Stack, TextField } from "@mui/material";
+import { useState} from "react";
+import { Stack, TextField, Alert, Box} from "@mui/material";
 import { Button } from "@mui/material";
 import axios from "axios";
 import DatePicker from "@mui/lab/DatePicker";
@@ -21,7 +21,9 @@ function CreateQRcode() {
   const [qr, setQR] = useState("");
   const [dateEntered, setDateEntered] = useState(new Date());
   const [dateModified, setDateModified] = useState(new Date());
-  // const [selectedDate, handleDateChange] = useState(new Date());
+  const [base64Encoding, setBase64Encoding] = useState("");
+  const [message, setMessage] = useState(false);
+  const [severity, setSeverity] = useState("success")
 
   const dateToString = (dateObj) =>
     `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(
@@ -55,18 +57,24 @@ function CreateQRcode() {
     setExperimentId(e.target.value);
   };
 
-  const printImg = () => {
-    const url = `http://localhost:5000/assets/qr_code/${qr}_${size}?${experimentId}`;
+  const changeDisplayMessage = (message, severity) => {
+    setMessage(message);
+    setSeverity(severity)
+    setTimeout(() => {
+        setSeverity("success");
+        setMessage("");
+    }, 1000);
+}
 
-    const win = window.open("");
-    win.document.write("<html><head>");
-    win.document.write("</head><body>");
-    win.document.write('<img id="print-image-element" src="' + url + '"/>');
-    win.document.write(
-      '<script>var img = document.getElementById("print-image-element"); img.addEventListener("load",function(){ window.focus(); window.print(); window.document.close(); window.close(); }); </script>'
-    );
-    win.document.write("</body></html>");
-    win.window.print();
+  const printImg = async () => {
+    let size_string = size.substring(0, size.length - 2)
+    try{
+      await axios.get(`http://localhost:5000/print/${qr}?size=${size_string}`);
+      changeDisplayMessage("Successfully printed QRCode", "success")
+    } catch(e){
+        changeDisplayMessage("An error has occured. Please try again.", "error")
+        console.log(e);
+    }
   };
 
   const sendQRCode = async () => {
@@ -82,7 +90,7 @@ function CreateQRcode() {
         size: size,
       };
       let res = await axios.post("http://localhost:5000/create/qr_code", obj);
-      setQR(res.data);
+      setQR(res.data["qr_code_key"]);
       setTrueSize(size);
       setExperimentId("");
       setAnalyst("");
@@ -91,162 +99,181 @@ function CreateQRcode() {
       setDateModified(new Date());
       setContents("");
       setStorageCondition("");
-      console.log(qr);
+      setBase64Encoding(res.data["image_string"])
+      setMessage("Successfully created QRCode");
+      setTimeout(() => {
+        setMessage("");
+    },1000);
     } catch (e) {
+          setSeverity("error");
+          setMessage("An error has occured. Please try again.");
+            setTimeout(() => {
+                setSeverity("success");
+                setMessage("");
+            }, 1000);
       console.log(e);
     }
   };
 
   return (
-    <Stack width={"100vw"} mx={2} spacing={2} mt={2} direction="row">
-      <Stack width={"45vw"} spacing={2}>
-        <TextField
-          required
-          label="Experiment ID"
-          value={experimentId}
-          onChange={handleChangeExperiment}
-          id="outline-required"
-          variant="filled"
-          margin="dense"
-        />
-        <TextField
-          required
-          id="outlined-required"
-          label="Storage Condition"
-          value={storageCondition}
-          onChange={handleChangeStorageCondition}
-          margin="dense"
-          variant="filled"
-        />
-        <TextField
-          required
-          id="outlined-required"
-          label="Contents"
-          value={contents}
-          onChange={handleChangeContents}
-          margin="dense"
-          variant="filled"
-        />
-        <TextField
-          required
-          id="outlined-required"
-          label="Analyst"
-          value={analyst}
-          onChange={handleChangeAnalyst}
-          margin="dense"
-          variant="filled"
-        />
+    <>
+      <Box mt={5} mb={5} sx={{visibility: message?'visible':'hidden'}}>
+        <Alert severity={severity} style={{ fontSize: "20px", minHeight:"2.2em"}}>
+            {message}
+        </Alert>
+      </Box>
 
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DatePicker
-            label="Date Entered"
-            value={dateEntered}
-            onChange={handleChangeDateEntered}
-            renderInput={(params) => (
-              <TextField
-                id="outlined-required"
-                margin="dense"
-                variant="filled"
-                required
-                {...params}
-              />
-            )}
+      <Stack width={"100vw"} mx={2} spacing={2} mt={2} direction="row">
+        <Stack width={"45vw"} spacing={2}>
+          <TextField
+            required
+            label="Experiment ID"
+            value={experimentId}
+            onChange={handleChangeExperiment}
+            id="outline-required"
+            variant="filled"
+            margin="dense"
           />
-          <DatePicker
-            label="Expiry"
-            value={expiry}
-            onChange={handleChangeExpiry}
-            renderInput={(params) => (
-              <TextField
-                id="outlined-required"
-                margin="dense"
-                variant="filled"
-                required
-                {...params}
-              />
-            )}
+          <TextField
+            required
+            id="outlined-required"
+            label="Storage Condition"
+            value={storageCondition}
+            onChange={handleChangeStorageCondition}
+            margin="dense"
+            variant="filled"
+          />
+          <TextField
+            required
+            id="outlined-required"
+            label="Contents"
+            value={contents}
+            onChange={handleChangeContents}
+            margin="dense"
+            variant="filled"
+          />
+          <TextField
+            required
+            id="outlined-required"
+            label="Analyst"
+            value={analyst}
+            onChange={handleChangeAnalyst}
+            margin="dense"
+            variant="filled"
           />
 
-          <DatePicker
-            label="Date Modified"
-            value={dateModified}
-            onChange={handleChangeDateModified}
-            renderInput={(params) => (
-              <TextField
-                id="outlined-required"
-                margin="dense"
-                variant="filled"
-                required
-                {...params}
-              />
-            )}
-          />
-        </LocalizationProvider>
-
-        <Stack spacing={2} direction={"row"}>
-          {sizes.map((d, i) => {
-            return (
-              <Button
-                variant={size === d ? "contained" : "outlined"}
-                onClick={() => {
-                  setSize(d);
-                }}
-                sx={{ textTransform: "none" }}
-                key={i}
-              >
-                {d}
-              </Button>
-            );
-          })}
-        </Stack>
-        <Button
-          variant="contained"
-          color="primary"
-          size="large"
-          disabled={
-            experimentId &&
-            analyst &&
-            expiry &&
-            dateModified &&
-            dateEntered &&
-            contents &&
-            storageCondition
-              ? false
-              : true
-          }
-          onClick={() => {
-            sendQRCode();
-          }}
-        >
-          Create
-        </Button>
-      </Stack>
-      <Stack alignItems={"center"} width={"45vw"} justifyContent={"center"}>
-        {/* <h1>{qr}</h1> */}
-        {qr ? (
-          <div>
-            <h1>QR code has Key {qr}</h1>
-            <img
-              alt="Generated QR Code"
-              src={`http://localhost:5000/assets/qr_code/${qr}_${trueSize}?${experimentId}`}
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Date Entered"
+              value={dateEntered}
+              onChange={handleChangeDateEntered}
+              renderInput={(params) => (
+                <TextField
+                  id="outlined-required"
+                  margin="dense"
+                  variant="filled"
+                  required
+                  {...params}
+                />
+              )}
             />
-          </div>
-        ) : (
-          ""
-        )}
-        {qr ? (
+            <DatePicker
+              label="Expiry"
+              value={expiry}
+              onChange={handleChangeExpiry}
+              renderInput={(params) => (
+                <TextField
+                  id="outlined-required"
+                  margin="dense"
+                  variant="filled"
+                  required
+                  {...params}
+                />
+              )}
+            />
+
+            <DatePicker
+              label="Date Modified"
+              value={dateModified}
+              onChange={handleChangeDateModified}
+              renderInput={(params) => (
+                <TextField
+                  id="outlined-required"
+                  margin="dense"
+                  variant="filled"
+                  required
+                  {...params}
+                />
+              )}
+            />
+          </LocalizationProvider>
+
+          <Stack spacing={2} direction={"row"}>
+            {sizes.map((d, i) => {
+              return (
+                <Button
+                  variant={size === d ? "contained" : "outlined"}
+                  onClick={() => {
+                    setSize(d);
+                  }}
+                  sx={{ textTransform: "none" }}
+                  key={i}
+                >
+                  {d}
+                </Button>
+              );
+            })}
+          </Stack>
           <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            disabled={
+              experimentId &&
+              analyst &&
+              expiry &&
+              dateModified &&
+              dateEntered &&
+              contents &&
+              storageCondition
+                ? false
+                : true
+            }
             onClick={() => {
-              printImg();
+              sendQRCode();
             }}
           >
-            Print
+            Create
           </Button>
-        ) : (
-          ""
-        )}
+        </Stack>
+        <Stack alignItems={"center"} width={"45vw"} justifyContent={"center"}
+        sx={{backgroundColor:'#D9EAF7'}}>
+          {qr ? (
+            <div>
+              <h1>QR code Key: <span style={{color:'#007A73'}}>{qr}</span></h1>
+              <img
+                alt="Generated QR Code"
+                src={base64Encoding?`data:image/png;base64,${base64Encoding}`:''}
+              />
+            </div>
+          ) : (
+            ""
+          )}
+          {qr ? <Button
+              size="large"
+              sx={{mt:'1.0em'}}
+              variant="contained"
+              onClick={() => {
+                printImg();
+              }}
+            >
+              Print
+            </Button>: (
+            ""
+          )}
+        </Stack>
       </Stack>
-    </Stack>
+    </>
   );
 }
 

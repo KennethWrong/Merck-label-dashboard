@@ -2,16 +2,10 @@ from flask import make_response, json
 import pandas as pd
 import qr_code
 from datetime import datetime, date
-from sqlalchemy import create_engine, select
-from sqlalchemy.orm import sessionmaker
 import db_helper
-from schema import Sample, get_database_uri
+from print_helper import print_image
+from qr_code import convert_image_to_base64
 
-#Creates a session with your local postgresql database
-DATABASE_URI = get_database_uri()
-db = create_engine(DATABASE_URI) 
-Session = sessionmaker(db) 
-session = Session()
 
 ############################################################
 # Function_name: create_response
@@ -85,6 +79,7 @@ def retrieve_sample_information_with_key(qr_code_key):
         qr_code_key = str(qr_code_key)
 
         res = db_helper.retrieve_sample_information_with_key(qr_code_key)
+        print(f"QR KEY IS {qr_code_key}")
         # if qr_code_key does not exist in DB
         if not res:
                 return {}, 404
@@ -124,6 +119,7 @@ def retrieve_sample_information_with_key(qr_code_key):
 ############################################################
 def parse_csv_to_db(file_path,info):
         try:
+                return_dic = {}
                 df = pd.read_csv(file_path)
                 current_date = db_helper.get_strf_utc_date()
                 for index,row in df.iterrows():
@@ -139,7 +135,9 @@ def parse_csv_to_db(file_path,info):
                                 'date_modified': current_date,
                         }
 
-                        qr_code_key = qr_code.create_qr_code(dic)
+                        qr_code_key, base64_hash = qr_code.create_qr_code_without_saving(dic)
+                        base64_hash = base64_hash
+                        return_dic[qr_code_key] = base64_hash
                         #If we are inserting a new_sample, we update new_sample_insert count
                         if insert_new_sample(qr_code_key, dic):
                                 info[0] += 1
@@ -147,7 +145,26 @@ def parse_csv_to_db(file_path,info):
                         else:
                                 info[1] += 1
 
-                return 200
+                return 200, return_dic
         except Exception as e:
                 print(e, flush=True)
-                return 500
+                return 500, None
+
+
+
+def print_label_with_qr_code_key(qr_code_key, size='2ml'):
+        dic, _ = retrieve_sample_information_with_key(qr_code_key)
+        dic['size'] = size
+        img = qr_code.create_qr_code_return_image_obj(dic)
+        return print_image(img)
+
+
+def retrieve_label_with_qr_code_key(qr_code_key):
+        dic, status = retrieve_sample_information_with_key(qr_code_key)
+        # print(dic, status, flush=True)
+        if status != 200:
+                return None
+
+        img = qr_code.create_qr_code_return_image_obj(dic)
+        img = img.rotate(angle=270, expand=True)
+        return convert_image_to_base64(img)     

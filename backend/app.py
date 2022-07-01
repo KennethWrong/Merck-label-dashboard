@@ -1,7 +1,8 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_from_directory, redirect
 import api_helper
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from api_helper import print_label_with_qr_code_key
 import qr_code
 import os
 import base64
@@ -9,9 +10,16 @@ import re
 import uuid
 import db_helper
 
-app = Flask(__name__, static_url_path='')
+redirect_url = "http://localhost:5000/"
+
+app = Flask(__name__, static_folder='../frontend/build', static_url_path='/')
 app.config['DEBUG']=True
+app.config['CORS_HEADERS'] = 'application/json'
 CORS(app)
+
+@app.route("/", methods=["GET"])
+def home():
+    return send_from_directory(app.static_folder, 'index.html')
 
 #End point for qr_code scanning
 @app.route('/scan/qr_code', methods=['POST'])
@@ -26,19 +34,28 @@ def get_vile_info_from_qr_code():
 @app.route('/create/qr_code', methods=['POST'])
 def create_qr_code():
     content = request.json
-    print(content, flush=True)
     #With the qr_code_size we can call create qr_code small, medium large
-    qr = qr_code.create_qr_code(content)
+    qr_code_key, image_base64  = qr_code.create_qr_code_without_saving(content)
+    # qr = qr_code.create_qr_code(content)
 
     #insert sample and information into qr_code
-    api_helper.insert_new_sample(qr, content)
-    response = api_helper.create_response(qr)
-    return response
+    api_helper.insert_new_sample(qr_code_key, content)
 
-#Return generated .png of qr_code to the front-end
-@app.route('/assets/qr_code/<qr_code_key>',methods=['GET'])
-def get_qr_code(qr_code_key):
-    return send_file(f"files_for_label/{qr_code_key}.png", mimetype='image/png')
+    message = {
+        'qr_code_key': qr_code_key,
+        'image_string': image_base64,
+    }
+
+    status = 200 if image_base64 != None else 500
+
+    return api_helper.create_response_from_scanning(message=message, status_code=status)
+
+#For printing qr_code
+@app.route('/print/<qr_code_key>',methods=['GET'])
+def print_label(qr_code_key):
+    size = request.args.get('size')
+    status = print_label_with_qr_code_key(qr_code_key, size)
+    return api_helper.create_response(status_code=status, message="printing success")
 
 #For front-end sending CSV to backend
 @app.route('/csv',methods=['POST'])
@@ -52,9 +69,19 @@ def dump_csv():
     #Save the file
     file.save(full_path)
     values = [0,0]
-    res = api_helper.parse_csv_to_db(full_path,values)
-    print(values,flush=True)
-    return api_helper.create_response(status_code=res, message=f"Total Entries:{values[0]+values[1]} New:{values[0]} Updated:{values[1]}")
+    status, dic = api_helper.parse_csv_to_db(full_path,values)
+    dic['message'] = f"Total Entries:{values[0]+values[1]} New:{values[0]} Updated:{values[1]}"
+    return api_helper.create_response_from_scanning(status_code=status, message=dic)
+
+@app.route('/asset/<qr_code_key>',methods=['GET'])
+def get_qr_code_image(qr_code_key):
+    base64_image = api_helper.retrieve_label_with_qr_code_key(qr_code_key)
+    status_code = 200 if base64_image else 500
+    return_dic = {
+        'image':base64_image
+    }
+    return api_helper.create_response_from_scanning(status_code=status_code, message=return_dic)
+
 
 #/upload/label_image
 @app.route('/upload/label_image', methods=['POST'])
@@ -67,5 +94,28 @@ def upload_label_image():
     return api_helper.create_response()
 
 
+#for redirecting
+
+
+@app.route('/scan/qr_code', methods=['GET'])
+def redirect_get_vile_info_from_qr_code():
+    return redirect(redirect_url, code=302)
+
+@app.route('/create/qr_code', methods=['GET'])
+def redirect_qr_code():
+    return redirect(redirect_url, code=302)
+
+@app.route('/QRScanner', methods=['GET'])
+def redirect_qr_scanner():
+    return redirect(redirect_url, code=302)
+
+@app.route('/csv_upload', methods=['GET'])
+def redirect_csv_upload():
+    return redirect(redirect_url, code=302)
+
+@app.route('/lookup', methods=['GET'])
+def redirect_lookup():
+    return redirect(redirect_url, code=302)
+    
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
